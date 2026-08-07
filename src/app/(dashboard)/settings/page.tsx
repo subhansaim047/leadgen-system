@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/Button/Button';
 import { triggerScrape } from '@/lib/api';
-import { Play, CheckCircle } from 'lucide-react';
+import { Play, CheckCircle, Zap, ShieldCheck } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function SettingsPage() {
@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const [city, setCity] = useState('Austin');
   const [country, setCountry] = useState('USA');
   const [limit, setLimit] = useState(50);
-  const [source, setSource] = useState('outscraper');
+  const [source, setSource] = useState('google_maps_live');
   const [scraping, setScraping] = useState(false);
 
   const handleManualScrape = async (e: React.FormEvent) => {
@@ -21,7 +21,7 @@ export default function SettingsPage() {
     try {
       setScraping(true);
       const res = await triggerScrape({ niche, city, country, limit, source });
-      alert(`✅ Lead Scraping Job Completed!\n\nSuccessfully generated ${res.total_new || limit} target leads for "${niche}" in ${city}, ${country}.\n\nGo to the 'Lead CRM Workspace' tab to view your leads!`);
+      alert(`✅ Live Multi-Platform Scraping Completed!\n\nSuccessfully extracted ${res.total_new || limit} live target leads for "${niche}" in ${city}, ${country} via [${source.replace(/_/g, ' ').toUpperCase()}].\n\nGo to the 'Lead CRM Workspace' tab to view your leads!`);
     } catch (err: any) {
       alert(`Error triggering job: ${err.message}`);
     } finally {
@@ -31,32 +31,44 @@ export default function SettingsPage() {
 
   return (
     <>
-      <Header title="Settings & Lead Scraper Control" />
+      <Header title="Universal Live Web Scraper Engine" />
       <div className={styles.container}>
         {/* Manual Scraper Trigger */}
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Lead Scraper Engine</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <Zap size={20} color="var(--accent-primary)" />
+            <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Universal Multi-Platform Free Scraper (0 API Keys Required)</h2>
+          </div>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '14px' }}>
-            Specify your target business category, city, and lead limit. The system will search Google Maps and extract zero-website & high-opportunity prospects.
+            Extracted directly from live web search engines, public business directories, social networks, and trade registers without needing any paid third-party API keys.
           </p>
           <form onSubmit={handleManualScrape}>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Lead Source Provider</label>
+              <label className={styles.label}>Target Platform / Lead Data Source</label>
               <select className={styles.input} value={source} onChange={(e) => setSource(e.target.value)}>
-                <option value="outscraper">Outscraper (Google Maps Scraper)</option>
-                <option value="apify">Apify (No-Website Business Finder)</option>
-                <option value="free_built_in">Free Built-in Smart Lead Scraper</option>
+                <option value="google_maps_live">Google Maps Live Direct (⭐⭐⭐⭐⭐ Free Web Harvester)</option>
+                <option value="linkedin_live">LinkedIn Business Directory (⭐⭐⭐⭐⭐ Public Search)</option>
+                <option value="facebook_live">Facebook Local Business Pages (⭐⭐⭐⭐⭐ Public Search)</option>
+                <option value="instagram_live">Instagram Business Search (⭐⭐⭐⭐☆ Public Profiles)</option>
+                <option value="yelp_live">Yelp Local Directory (⭐⭐⭐⭐☆ Live Search)</option>
+                <option value="bing_places_live">Bing Places for Business (⭐⭐⭐⭐☆ Live Search)</option>
+                <option value="apple_maps_live">Apple Maps Business Directory (⭐⭐⭐⭐☆ Live Search)</option>
+                <option value="reddit_live">Reddit Local Business Leads (⭐⭐⭐⭐☆ Community Search)</option>
+                <option value="chamber_commerce">Chamber of Commerce Directory (⭐⭐⭐⭐☆ Local Registers)</option>
+                <option value="trade_shows">Trade Show Exhibitor Lists (⭐⭐⭐⭐☆ B2B Lists)</option>
+                <option value="email_harvester">Public Website Email & Phone Harvester (⭐⭐⭐⭐☆ Domain Crawl)</option>
+                <option value="crunchbase_live">Crunchbase Startup Directory (⭐⭐⭐⭐☆ Startup Search)</option>
               </select>
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>Niche / Business Category</label>
+              <label className={styles.label}>Niche / Business Category / Keywords</label>
               <input type="text" className={styles.input} value={niche} onChange={(e) => setNiche(e.target.value)} placeholder="e.g. Dental Clinics, Plumbers, Auto Detailing" required />
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>Target City</label>
-              <input type="text" className={styles.input} value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Austin, London, Dubai" required />
+              <label className={styles.label}>Target City / Region</label>
+              <input type="text" className={styles.input} value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Austin, London, Dubai, Lahore" required />
             </div>
 
             <div className={styles.formGroup}>
@@ -67,29 +79,34 @@ export default function SettingsPage() {
                 <option value="UK">United Kingdom</option>
                 <option value="Australia">Australia</option>
                 <option value="UAE">UAE</option>
+                <option value="Pakistan">Pakistan</option>
+                <option value="Global">Global / Worldwide</option>
               </select>
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>Requested Lead Limit</label>
+              <label className={styles.label}>Requested Lead Count Limit</label>
               <input type="number" className={styles.input} value={limit} onChange={(e) => setLimit(Number(e.target.value))} min={10} max={100} />
             </div>
 
             <Button type="submit" variant="primary" icon={scraping ? <CheckCircle size={16} /> : <Play size={16} />} disabled={scraping}>
-              {scraping ? 'Extracting Leads...' : `Start Scraping (${limit} Leads)`}
+              {scraping ? 'Extracting Live Leads...' : `Start Live Scrape (${limit} Leads)`}
             </Button>
           </form>
         </div>
 
-        {/* API Configurations */}
+        {/* System Architecture */}
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>API System Architecture</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <ShieldCheck size={20} color="var(--accent-success)" />
+            <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Scraper Engine Architecture</h2>
+          </div>
           <div className={styles.formGroup}>
-            <label className={styles.label}>Active API Mode</label>
-            <input type="text" className={styles.input} value="Native Next.js Serverless Edge Cloud" readOnly />
+            <label className={styles.label}>Active Method</label>
+            <input type="text" className={styles.input} value="Live Playwright + Public Search Engine Harvester (0 API Keys Required)" readOnly />
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            System runs 100% natively on Vercel Serverless Edge network with zero external server requirements.
+            The system executes live HTML parsing across public directories to extract real active business names, phone numbers, addresses, ratings, zero-website flags, and social links.
           </p>
         </div>
       </div>
