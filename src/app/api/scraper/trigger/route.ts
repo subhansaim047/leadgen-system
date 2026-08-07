@@ -55,6 +55,10 @@ export async function POST(request: Request) {
         const reviews = Math.floor(Math.random() * 250) + 25; // Active 25-275 reviews
         const customMsg = buildCustomTemplate(bName, niche);
 
+        // Direct Facebook Page and Instagram search URLs
+        const fbUrl = `https://www.facebook.com/search/pages/?q=${encodeURIComponent(bName + ' ' + city)}`;
+        const igUrl = `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(bName + ' ' + city)}`;
+
         // STRICT ZERO WEBSITE GUARANTEE: website_url is ALWAYS NULL
         const lead = {
           id: leadId,
@@ -70,8 +74,8 @@ export async function POST(request: Request) {
           google_rating: rating,
           review_count: reviews,
           google_maps_url: `https://maps.google.com/?q=${encodeURIComponent(bName)}+${encodeURIComponent(city)}`,
-          fb_url: `https://www.facebook.com/search/top?q=${encodeURIComponent(bName)}+${encodeURIComponent(city)}`,
-          ig_url: `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(bName)}+${encodeURIComponent(city)}`,
+          fb_url: fbUrl,
+          ig_url: igUrl,
           confidence_score: 98,
           status: 'new',
           created_at: new Date().toISOString(),
@@ -119,6 +123,9 @@ export async function POST(request: Request) {
       const reviews = Math.floor(Math.random() * 200) + 20;
       const customMsg = buildCustomTemplate(bName, niche);
 
+      const fbUrl = `https://www.facebook.com/search/pages/?q=${encodeURIComponent(bName + ' ' + city)}`;
+      const igUrl = `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(bName + ' ' + city)}`;
+
       // STRICT ZERO WEBSITE GUARANTEE: website_url is ALWAYS NULL
       const lead = {
         id,
@@ -134,8 +141,8 @@ export async function POST(request: Request) {
         google_rating: rating,
         review_count: reviews,
         google_maps_url: `https://maps.google.com/?q=${encodeURIComponent(bName)}+${encodeURIComponent(city)}`,
-        fb_url: `https://www.facebook.com/search/top?q=${encodeURIComponent(bName)}+${encodeURIComponent(city)}`,
-        ig_url: `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(bName)}+${encodeURIComponent(city)}`,
+        fb_url: fbUrl,
+        ig_url: igUrl,
         confidence_score: 98,
         status: 'new',
         created_at: new Date().toISOString(),
