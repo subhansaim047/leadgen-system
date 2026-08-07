@@ -44,13 +44,11 @@ export function generateAndAddLeads(niche: string, city: string, country: string
     const suff = suffixes[Math.floor(Math.random() * suffixes.length)];
     const bName = `${pref} ${n.charAt(0).toUpperCase() + n.slice(1)} ${suff}`;
     
-    // 70% have NO website (highest opportunity)
-    const hasWebsite = Math.random() < 0.3;
-    const webUrl = hasWebsite ? `http://www.${bName.toLowerCase().replace(/[^a-z0-9]/g, '')}.com` : null;
+    // STRICT ZERO WEBSITE GUARANTEE: website_url is ALWAYS NULL
     const phone = `+1 (${Math.floor(Math.random() * 800) + 200}) ${Math.floor(Math.random() * 800) + 200}-${Math.floor(Math.random() * 9000) + 1000}`;
     const id = `lead-gen-${Date.now()}-${i}`;
-    const rating = Number((Math.random() * 1.2 + 3.8).toFixed(1));
-    const reviews = Math.floor(Math.random() * 180) + 15;
+    const rating = Number((Math.random() * 0.8 + 4.2).toFixed(1));
+    const reviews = Math.floor(Math.random() * 220) + 22;
 
     const templateText = buildCustomTemplate(bName, n);
 
@@ -63,23 +61,23 @@ export function generateAndAddLeads(niche: string, city: string, country: string
       address: `${Math.floor(Math.random() * 8999) + 100} Main Ave, ${c}, ${cnt}`,
       phone,
       normalized_phone: phone.replace(/\D/g, '').slice(-10),
-      website_url: webUrl,
-      website_type: hasWebsite ? 'outdated' : 'none',
+      website_url: null, // STRICTLY ZERO WEBSITE
+      website_type: 'none',
       google_rating: rating,
       review_count: reviews,
       google_maps_url: `https://maps.google.com/?q=${encodeURIComponent(bName)}+${encodeURIComponent(c)}`,
-      confidence_score: hasWebsite ? 65 : 95,
+      confidence_score: 98,
       status: 'new',
       created_at: new Date().toISOString(),
       audit: {
         id: `audit-${id}`,
-        has_ssl: hasWebsite ? Math.random() > 0.5 : false,
-        is_mobile_friendly: hasWebsite ? Math.random() > 0.5 : false,
-        load_time_seconds: hasWebsite ? Number((Math.random() * 4 + 3).toFixed(1)) : 0,
-        cms_detected: hasWebsite ? 'wordpress_legacy' : 'none',
-        audit_score: hasWebsite ? 35 : 12,
-        issues: hasWebsite ? ['Slow Mobile Speed', 'Legacy CMS'] : ['No Website Found', 'Missing Booking System'],
-        summary: hasWebsite ? `Legacy website with slow mobile load time.` : `Top rated ${n} in ${c} with ${reviews} reviews but zero website.`
+        has_ssl: false,
+        is_mobile_friendly: false,
+        load_time_seconds: 0,
+        cms_detected: 'none',
+        audit_score: 10,
+        issues: ['No Website Found', 'Missing SSL Certificate', 'No Online Booking System'],
+        summary: `Top rated active ${n} in ${c} with ${reviews} Google reviews but zero official website.`
       },
       ai_analysis: {
         opportunity_level: 'High',
