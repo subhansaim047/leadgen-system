@@ -6,6 +6,7 @@ pydantic-settings==2.2.1
 # Database
 sqlalchemy==2.0.30
 asyncpg==0.29.0
+aiosqlite==0.20.0
 alembic==1.13.1
 psycopg2-binary==2.9.9
 
@@ -25,7 +26,6 @@ python-multipart==0.0.9
 # Utilities
 python-dotenv==1.0.1
 tenacity==8.3.0
-hashlib2==1.0.0
 phonenumbers==8.13.36
 validators==0.28.1
 beautifulsoup4==4.12.3

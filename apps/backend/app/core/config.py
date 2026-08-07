@@ -1,25 +1,22 @@
 """
-Application Configuration — reads from .env file
+Application Configuration — reads from .env file with safe defaults
 """
 from pydantic_settings import BaseSettings
 from typing import List
 
 
 class Settings(BaseSettings):
-    # Database
-    DATABASE_URL: str
+    # Database (Defaults to SQLite for instant zero-config startup)
+    DATABASE_URL: str = "sqlite+aiosqlite:///./leadgen.db"
     POSTGRES_USER: str = "leadgen_admin"
-    POSTGRES_PASSWORD: str
+    POSTGRES_PASSWORD: str = "leadgen_secret_pass"
     POSTGRES_DB: str = "leadgen"
 
     # Security
-    API_SECRET_TOKEN: str
+    API_SECRET_TOKEN: str = "leadgen_secret_token_123"
 
     # CORS
-    ALLOWED_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "https://yourdomain.com",
-    ]
+    ALLOWED_ORIGINS: List[str] = ["*"]
 
     # Lead Discovery APIs
     OUTSCRAPER_API_KEY: str = ""
@@ -33,7 +30,7 @@ class Settings(BaseSettings):
     ZEROBOUNCE_API_KEY: str = ""
 
     # OpenAI
-    OPENAI_API_KEY: str
+    OPENAI_API_KEY: str = "sk-placeholder-key"
     OPENAI_MODEL: str = "gpt-4o-mini"
     OPENAI_VISION_MODEL: str = "gpt-4o"
 
@@ -57,6 +54,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
 settings = Settings()
