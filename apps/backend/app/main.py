@@ -1,6 +1,7 @@
 """
 LEADGEN SYSTEM - FastAPI Application Entry Point
 """
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -15,10 +16,14 @@ from app.api.endpoints import leads, scraper, auditor, outreach, webhooks, expor
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
-    # Startup: create tables (migrations handled by init.sql in Docker)
     print("✅ LeadGen API starting up...")
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        print("✅ Database tables verified/created.")
+    except Exception as e:
+        print(f"⚠️ Database init notice: {e}")
     yield
-    # Shutdown
     print("🛑 LeadGen API shutting down...")
 
 
@@ -34,13 +39,14 @@ app = FastAPI(
 # ─── CORS ────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ─── STATIC FILES (Screenshots) ──────────────────────────────────────────────
+os.makedirs("/app/screenshots", exist_ok=True)
 app.mount("/screenshots", StaticFiles(directory="/app/screenshots"), name="screenshots")
 
 # ─── ROUTERS ─────────────────────────────────────────────────────────────────
@@ -53,6 +59,17 @@ app.include_router(export.router,    prefix="/api/export",   tags=["Export"])
 app.include_router(jobs.router,      prefix="/api/jobs",     tags=["Jobs"])
 
 
+@app.get("/", tags=["System"])
+async def root():
+    return {"status": "ok", "service": "leadgen-api", "version": "1.0.0"}
+
+
 @app.get("/health", tags=["System"])
 async def health_check():
     return {"status": "ok", "service": "leadgen-api", "version": "1.0.0"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port)
