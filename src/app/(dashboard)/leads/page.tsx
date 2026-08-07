@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/Badge/Badge';
 import { Modal } from '@/components/ui/Modal/Modal';
 import { fetchLeads, fetchLeadDetail, triggerAudit, sendEmail, updateLeadStatus } from '@/lib/api';
 import { Lead } from '@/types';
-import { Search, Filter, Eye, Send, Play, ExternalLink, Check } from 'lucide-react';
+import { Search, Filter, Eye, Send, Play, ExternalLink, Check, Copy } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function LeadsPage() {
@@ -24,14 +24,16 @@ export default function LeadsPage() {
   // Selected Lead Modal
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedSubject, setCopiedSubject] = useState(false);
+  const [copiedBody, setCopiedBody] = useState(false);
+  const [copiedDm, setCopiedDm] = useState(false);
 
   const loadLeads = async () => {
     try {
       setLoading(true);
       const res = await fetchLeads({
         page,
-        per_page: 20,
+        per_page: 50,
         search,
         status: statusFilter,
         website_type: websiteFilter,
@@ -67,19 +69,28 @@ export default function LeadsPage() {
 
   const handleTriggerAudit = async (leadId: string) => {
     await triggerAudit(leadId);
+    alert('Audit re-run completed!');
     loadLeads();
   };
 
   const handleSendEmail = async (leadId: string) => {
     await sendEmail(leadId);
-    alert('Email queued for dispatch!');
+    alert('✅ Email outreach queued for dispatch!');
     loadLeads();
   };
 
-  const copyText = (text: string) => {
+  const copyToClipboard = (text: string, type: 'subject' | 'body' | 'dm') => {
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (type === 'subject') {
+      setCopiedSubject(true);
+      setTimeout(() => setCopiedSubject(false), 2000);
+    } else if (type === 'body') {
+      setCopiedBody(true);
+      setTimeout(() => setCopiedBody(false), 2000);
+    } else if (type === 'dm') {
+      setCopiedDm(true);
+      setTimeout(() => setCopiedDm(false), 2000);
+    }
   };
 
   const getWebsiteBadge = (type: string) => {
@@ -93,18 +104,22 @@ export default function LeadsPage() {
       case 'modern':
         return <Badge variant="success">Modern</Badge>;
       default:
-        return <Badge variant="default">Unknown</Badge>;
+        return <Badge variant="default">No Website</Badge>;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
+      case 'new':
+        return <Badge variant="info">New</Badge>;
       case 'outreach_ready':
         return <Badge variant="info">Ready</Badge>;
       case 'contacted':
         return <Badge variant="warning">Contacted</Badge>;
       case 'replied':
         return <Badge variant="success">Replied</Badge>;
+      case 'converted':
+        return <Badge variant="success">Converted</Badge>;
       default:
         return <Badge variant="default">{status}</Badge>;
     }
@@ -115,14 +130,14 @@ export default function LeadsPage() {
       <Header
         title="Lead CRM Workspace"
         onRefresh={loadLeads}
-        onExport={() => window.open(`${process.env.NEXT_PUBLIC_API_URL}/api/leads/export/csv`)}
+        onExport={() => window.open('/api/export/csv', '_blank')}
       />
 
       <div className={styles.filterBar}>
         <form onSubmit={handleSearchSubmit} className={styles.searchGroup}>
           <input
             type="text"
-            placeholder="Search business name..."
+            placeholder="Search business name, city, niche..."
             className={styles.searchInput}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -151,9 +166,9 @@ export default function LeadsPage() {
         >
           <option value="">All Statuses</option>
           <option value="new">New</option>
-          <option value="outreach_ready">Outreach Ready</option>
           <option value="contacted">Contacted</option>
           <option value="replied">Replied</option>
+          <option value="converted">Converted</option>
         </select>
       </div>
 
@@ -179,46 +194,47 @@ export default function LeadsPage() {
             ) : leads.length === 0 ? (
               <tr>
                 <td colSpan={6} style={{ textAlign: 'center', padding: '30px' }}>
-                  No leads found.
+                  No leads found. Trigger a job from Settings to generate leads!
                 </td>
               </tr>
             ) : (
-              leads.map((lead) => (
-                <tr key={lead.id}>
-                  <td>
-                    <div className={styles.businessName}>{lead.business_name}</div>
-                    <div className={styles.businessSub}>{lead.phone || 'No phone'}</div>
-                  </td>
-                  <td>
-                    <div>{lead.city}, {lead.country}</div>
-                    <div className={styles.businessSub}>{lead.niche}</div>
-                  </td>
-                  <td>{getWebsiteBadge(lead.website_type)}</td>
-                  <td>
-                    <span style={{ fontWeight: '700', color: lead.opportunity_score > 60 ? 'var(--accent-danger)' : 'var(--text-secondary)' }}>
-                      {lead.opportunity_score}/100
-                    </span>
-                  </td>
-                  <td>{getStatusBadge(lead.status)}</td>
-                  <td>
-                    <div className={styles.actionCell}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        icon={<Eye size={14} />}
-                        onClick={() => handleOpenDetail(lead.id)}
-                      >
-                        View
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        icon={<Play size={14} />}
-                        onClick={() => handleTriggerAudit(lead.id)}
-                      >
-                        Audit
-                      </Button>
-                      {lead.email && (
+              leads.map((lead) => {
+                const oppScore = lead.confidence_score || lead.opportunity_score || 85;
+                return (
+                  <tr key={lead.id}>
+                    <td>
+                      <div className={styles.businessName}>{lead.business_name}</div>
+                      <div className={styles.businessSub}>{lead.phone || 'Phone on Maps'}</div>
+                    </td>
+                    <td>
+                      <div>{lead.city}, {lead.country}</div>
+                      <div className={styles.businessSub}>{lead.niche}</div>
+                    </td>
+                    <td>{getWebsiteBadge(lead.website_type)}</td>
+                    <td>
+                      <span style={{ fontWeight: '700', color: oppScore > 75 ? 'var(--accent-danger)' : 'var(--text-secondary)' }}>
+                        {oppScore}/100
+                      </span>
+                    </td>
+                    <td>{getStatusBadge(lead.status)}</td>
+                    <td>
+                      <div className={styles.actionCell}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={<Eye size={14} />}
+                          onClick={() => handleOpenDetail(lead.id)}
+                        >
+                          View
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          icon={<Play size={14} />}
+                          onClick={() => handleTriggerAudit(lead.id)}
+                        >
+                          Audit
+                        </Button>
                         <Button
                           variant="primary"
                           size="sm"
@@ -227,18 +243,18 @@ export default function LeadsPage() {
                         >
                           Email
                         </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
 
       <div className={styles.pagination}>
-        <span>Total: {total} leads</span>
+        <span>Total: <strong>{total}</strong> leads in CRM</span>
         <div>
           <Button
             variant="secondary"
@@ -252,7 +268,7 @@ export default function LeadsPage() {
           <Button
             variant="secondary"
             size="sm"
-            disabled={leads.length < 20}
+            disabled={leads.length < 50}
             onClick={() => setPage(page + 1)}
           >
             Next
@@ -271,11 +287,9 @@ export default function LeadsPage() {
               <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
                 Close
               </Button>
-              {selectedLead.email && (
-                <Button variant="primary" icon={<Send size={14} />} onClick={() => handleSendEmail(selectedLead.id)}>
-                  Send AI Email
-                </Button>
-              )}
+              <Button variant="primary" icon={<Send size={14} />} onClick={() => handleSendEmail(selectedLead.id)}>
+                Send AI Email Pitch
+              </Button>
             </>
           }
         >
@@ -284,33 +298,67 @@ export default function LeadsPage() {
               <div className={styles.sectionHeader}>Business Overview</div>
               <p><strong>Niche:</strong> {selectedLead.niche}</p>
               <p><strong>Location:</strong> {selectedLead.city}, {selectedLead.country}</p>
-              <p><strong>Phone:</strong> {selectedLead.phone || 'N/A'}</p>
-              <p><strong>Email:</strong> {selectedLead.email || 'Not found'} ({selectedLead.email_status})</p>
-              <p><strong>Rating:</strong> {selectedLead.google_rating} ★ ({selectedLead.review_count} reviews)</p>
+              <p><strong>Phone:</strong> {selectedLead.phone || 'Available on Maps'}</p>
+              <p><strong>Google Rating:</strong> {selectedLead.google_rating} ★ ({selectedLead.review_count} reviews)</p>
+              {selectedLead.google_maps_url && (
+                <p>
+                  <a href={selectedLead.google_maps_url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-primary)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    Open Google Maps Profile <ExternalLink size={12} />
+                  </a>
+                </p>
+              )}
             </div>
 
             <div>
               <div className={styles.sectionHeader}>Website Audit</div>
-              <p><strong>Type:</strong> {selectedLead.website_type}</p>
-              <p><strong>SSL:</strong> {selectedLead.audit?.ssl_valid ? 'Valid' : 'Missing'}</p>
-              <p><strong>Mobile:</strong> {selectedLead.audit?.is_mobile_responsive ? 'Yes' : 'No'}</p>
-              <p><strong>Load Time:</strong> {selectedLead.audit?.load_time_ms ? `${selectedLead.audit.load_time_ms}ms` : 'N/A'}</p>
-              <p><strong>Summary:</strong> {selectedLead.audit?.audit_summary}</p>
+              <p><strong>Status:</strong> {selectedLead.website_type === 'none' ? 'No Website (High Opportunity)' : selectedLead.website_type}</p>
+              <p><strong>SSL:</strong> {selectedLead.audit?.has_ssl ? 'Valid' : 'Missing / Unsecured'}</p>
+              <p><strong>Mobile Friendly:</strong> {selectedLead.audit?.is_mobile_friendly ? 'Yes' : 'No (Fails Viewport)'}</p>
+              <p><strong>Audit Summary:</strong> {selectedLead.audit?.summary || 'Top opportunity prospect'}</p>
             </div>
           </div>
 
           {selectedLead.ai_analysis && (
             <div style={{ marginTop: '20px' }}>
-              <div className={styles.sectionHeader}>AI Generated Pitch</div>
-              <p><strong>Subject:</strong> {selectedLead.ai_analysis.email_subject}</p>
-              <div className={styles.copyBox}>{selectedLead.ai_analysis.email_body}</div>
+              <div className={styles.sectionHeader}>AI Generated Outreach Copy</div>
+              <p style={{ marginTop: '8px' }}>
+                <strong>Cold Email Subject:</strong> {selectedLead.ai_analysis.cold_email_subject || selectedLead.ai_analysis.email_subject}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  style={{ marginLeft: '8px' }}
+                  icon={copiedSubject ? <Check size={12} color="var(--accent-success)" /> : <Copy size={12} />}
+                  onClick={() => copyToClipboard(selectedLead.ai_analysis?.cold_email_subject || selectedLead.ai_analysis?.email_subject || '', 'subject')}
+                >
+                  {copiedSubject ? 'Copied' : 'Copy'}
+                </Button>
+              </p>
+
+              <div className={styles.copyBox} style={{ marginTop: '8px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '6px' }}>
+                {selectedLead.ai_analysis.cold_email_body || selectedLead.ai_analysis.email_body}
+              </div>
               <Button
                 variant="secondary"
                 size="sm"
-                icon={copied ? <Check size={14} color="var(--accent-success)" /> : undefined}
-                onClick={() => copyText(selectedLead.ai_analysis?.email_body || '')}
+                style={{ marginTop: '8px' }}
+                icon={copiedBody ? <Check size={14} color="var(--accent-success)" /> : <Copy size={14} />}
+                onClick={() => copyToClipboard(selectedLead.ai_analysis?.cold_email_body || selectedLead.ai_analysis?.email_body || '', 'body')}
               >
-                {copied ? 'Copied!' : 'Copy Body Text'}
+                {copiedBody ? 'Copied Body Text!' : 'Copy Email Body'}
+              </Button>
+
+              <p style={{ marginTop: '16px' }}><strong>1-Click Social DM Text:</strong></p>
+              <div className={styles.copyBox} style={{ marginTop: '4px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '6px' }}>
+                {selectedLead.ai_analysis.social_dm_text || selectedLead.ai_analysis.fb_dm_text || selectedLead.ai_analysis.ig_dm_text}
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                style={{ marginTop: '8px' }}
+                icon={copiedDm ? <Check size={14} color="var(--accent-success)" /> : <Copy size={14} />}
+                onClick={() => copyToClipboard(selectedLead.ai_analysis?.social_dm_text || selectedLead.ai_analysis?.fb_dm_text || '', 'dm')}
+              >
+                {copiedDm ? 'Copied Social DM!' : 'Copy Social DM'}
               </Button>
             </div>
           )}

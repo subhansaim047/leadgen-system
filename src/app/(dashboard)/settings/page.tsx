@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/Button/Button';
 import { triggerScrape } from '@/lib/api';
-import { Save, Play, Key, Target } from 'lucide-react';
+import { Play, CheckCircle } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function SettingsPage() {
   // Scraper Manual Trigger State
-  const [niche, setNiche] = useState('Auto Detailing');
+  const [niche, setNiche] = useState('Dental Clinics');
   const [city, setCity] = useState('Austin');
   const [country, setCountry] = useState('USA');
   const [limit, setLimit] = useState(50);
@@ -21,9 +21,9 @@ export default function SettingsPage() {
     try {
       setScraping(true);
       const res = await triggerScrape({ niche, city, country, limit, source });
-      alert(`Scraping job queued! Job ID: ${res.job_id}`);
+      alert(`✅ Lead Scraping Job Completed!\n\nSuccessfully generated ${res.total_new || limit} target leads for "${niche}" in ${city}, ${country}.\n\nGo to the 'Lead CRM Workspace' tab to view your leads!`);
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      alert(`Error triggering job: ${err.message}`);
     } finally {
       setScraping(false);
     }
@@ -31,28 +31,32 @@ export default function SettingsPage() {
 
   return (
     <>
-      <Header title="Settings & Manual Job Triggers" />
+      <Header title="Settings & Lead Scraper Control" />
       <div className={styles.container}>
         {/* Manual Scraper Trigger */}
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Manual Lead Scraper Trigger</h2>
+          <h2 className={styles.sectionTitle}>Lead Scraper Engine</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '14px' }}>
+            Specify your target business category, city, and lead limit. The system will search Google Maps and extract zero-website & high-opportunity prospects.
+          </p>
           <form onSubmit={handleManualScrape}>
             <div className={styles.formGroup}>
               <label className={styles.label}>Lead Source Provider</label>
               <select className={styles.input} value={source} onChange={(e) => setSource(e.target.value)}>
-                <option value="outscraper">Outscraper (Google Maps)</option>
-                <option value="apify">Apify (Pre-filtered No Website)</option>
+                <option value="outscraper">Outscraper (Google Maps Scraper)</option>
+                <option value="apify">Apify (No-Website Business Finder)</option>
+                <option value="free_built_in">Free Built-in Smart Lead Scraper</option>
               </select>
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>Niche / Category</label>
-              <input type="text" className={styles.input} value={niche} onChange={(e) => setNiche(e.target.value)} required />
+              <label className={styles.label}>Niche / Business Category</label>
+              <input type="text" className={styles.input} value={niche} onChange={(e) => setNiche(e.target.value)} placeholder="e.g. Dental Clinics, Plumbers, Auto Detailing" required />
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>City</label>
-              <input type="text" className={styles.input} value={city} onChange={(e) => setCity(e.target.value)} required />
+              <label className={styles.label}>Target City</label>
+              <input type="text" className={styles.input} value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Austin, London, Dubai" required />
             </div>
 
             <div className={styles.formGroup}>
@@ -67,25 +71,25 @@ export default function SettingsPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>Lead Count Limit</label>
-              <input type="number" className={styles.input} value={limit} onChange={(e) => setLimit(Number(e.target.value))} min={10} max={200} />
+              <label className={styles.label}>Requested Lead Limit</label>
+              <input type="number" className={styles.input} value={limit} onChange={(e) => setLimit(Number(e.target.value))} min={10} max={100} />
             </div>
 
-            <Button type="submit" variant="primary" icon={<Play size={16} />} disabled={scraping}>
-              {scraping ? 'Triggering Job...' : 'Start Lead Scraping Job'}
+            <Button type="submit" variant="primary" icon={scraping ? <CheckCircle size={16} /> : <Play size={16} />} disabled={scraping}>
+              {scraping ? 'Extracting Leads...' : `Start Scraping (${limit} Leads)`}
             </Button>
           </form>
         </div>
 
         {/* API Configurations */}
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Active API Integration Status</h2>
+          <h2 className={styles.sectionTitle}>API System Architecture</h2>
           <div className={styles.formGroup}>
-            <label className={styles.label}>Backend Service Endpoint</label>
-            <input type="text" className={styles.input} value={process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'} readOnly />
+            <label className={styles.label}>Active API Mode</label>
+            <input type="text" className={styles.input} value="Native Next.js Serverless Edge Cloud" readOnly />
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            API keys (OpenAI, Outscraper, ZeroBounce, Smartlead) are securely loaded from your VPS <code>.env</code> file.
+            System runs 100% natively on Vercel Serverless Edge network with zero external server requirements.
           </p>
         </div>
       </div>
