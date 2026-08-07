@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { LEADS_STORE } from '../../../data';
+import { LEADS_STORE } from '../../leads/data';
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { LEADS_STORE } from '../../data';
+import { LEADS_STORE } from '../../leads/data';
 
 interface ScrapeBody {
   niche: string;

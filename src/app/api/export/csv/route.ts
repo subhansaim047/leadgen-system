@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { LEADS_STORE } from '../../../data';
+import { LEADS_STORE } from '../../leads/data';
 
 export async function GET() {
   const headers = ['Business Name', 'Niche', 'City', 'Country', 'Phone', 'Website URL', 'Website Type', 'Google Rating', 'Review Count', 'Status'];
