@@ -1,7 +1,7 @@
 import { Lead, OverviewStats } from '@/types';
 
-// Default to empty string for native Next.js API routes on Vercel
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+// Force relative API paths for 100% native Next.js Vercel API routing
+const API_BASE = '';
 
 export async function fetchLeads(params?: {
   page?: number;
