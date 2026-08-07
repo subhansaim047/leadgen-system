@@ -108,3 +108,74 @@ export const INITIAL_LEADS = [
     }
   }
 ];
+
+// Global in-memory store for newly generated leads
+export const LEADS_STORE = [...INITIAL_LEADS];
+
+export function generateAndAddLeads(niche: string, city: str, country: str, count: number = 50) {
+  const prefixes = ['Apex', 'Prime', 'Elite', 'Pro', 'Star', 'Master', 'Quality', 'Express', 'Golden', 'Precision', 'Royal', 'Ultimate', 'Select', 'Summit', 'Vanguard'];
+  const suffixes = ['Services', 'Hub', 'Center', 'Group', 'Solutions', 'Co.', 'Experts', 'Clinic', 'Studio', 'Works', 'Pros', 'Specialists'];
+
+  const n = niche || 'Business';
+  const c = city || 'Austin';
+  const cnt = country || 'USA';
+  const numToGen = Math.min(count || 50, 50);
+
+  const createdLeads = [];
+
+  for (let i = 1; i <= numToGen; i++) {
+    const pref = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const suff = suffixes[Math.floor(Math.random() * suffixes.length)];
+    const bName = `${pref} ${n.charAt(0).toUpperCase() + n.slice(1)} ${suff}`;
+    
+    // 70% have NO website (highest opportunity)
+    const hasWebsite = Math.random() < 0.3;
+    const webUrl = hasWebsite ? `http://www.${bName.toLowerCase().replace(/[^a-z0-9]/g, '')}.com` : null;
+    const phone = `+1 (${Math.floor(Math.random() * 800) + 200}) ${Math.floor(Math.random() * 800) + 200}-${Math.floor(Math.random() * 9000) + 1000}`;
+    const id = `lead-gen-${Date.now()}-${i}`;
+    const rating = Number((Math.random() * 1.2 + 3.8).toFixed(1));
+    const reviews = Math.floor(Math.random() * 180) + 15;
+
+    const newLead = {
+      id,
+      business_name: bName,
+      niche: n,
+      country: cnt,
+      city: c,
+      address: `${Math.floor(Math.random() * 8999) + 100} Main Ave, ${c}, ${cnt}`,
+      phone,
+      normalized_phone: phone.replace(/\D/g, '').slice(-10),
+      website_url: webUrl,
+      website_type: hasWebsite ? 'outdated' : 'none',
+      google_rating: rating,
+      review_count: reviews,
+      google_maps_url: `https://maps.google.com/?q=${encodeURIComponent(bName)}+${encodeURIComponent(c)}`,
+      confidence_score: hasWebsite ? 65 : 95,
+      status: 'new',
+      created_at: new Date().toISOString(),
+      audit: {
+        id: `audit-${id}`,
+        has_ssl: hasWebsite ? Math.random() > 0.5 : false,
+        is_mobile_friendly: hasWebsite ? Math.random() > 0.5 : false,
+        load_time_seconds: hasWebsite ? Number((Math.random() * 4 + 3).toFixed(1)) : 0,
+        cms_detected: hasWebsite ? 'wordpress_legacy' : 'none',
+        audit_score: hasWebsite ? 35 : 12,
+        issues: hasWebsite ? ['Slow Mobile Speed', 'Legacy CMS'] : ['No Website Found', 'Missing Booking System'],
+        summary: hasWebsite ? `Legacy website with slow mobile load time.` : `Top rated ${n} in ${c} with ${reviews} reviews but zero website.`
+      },
+      ai_analysis: {
+        opportunity_level: 'High',
+        estimated_deal_size: '$1,800 - $3,500',
+        recommended_pitch: `Build high-converting Next.js website for ${bName}.`,
+        cold_email_subject: `Digital presence for ${bName} in ${c}`,
+        cold_email_body: `Hi ${bName} team,\n\nI noticed your business in ${c} has ${reviews} great reviews but lacks a modern mobile site.\n\nWould you like to see a custom prototype built for your business?`,
+        social_dm_text: `Hey ${bName} team! 👋 Saw your ${reviews} 5-star reviews in ${c}. We built a quick mobile website prototype for you — mind if I drop a link?`
+      }
+    };
+
+    LEADS_STORE.unshift(newLead);
+    createdLeads.push(newLead);
+  }
+
+  return createdLeads;
+}

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { INITIAL_LEADS } from './data';
+import { LEADS_STORE } from './data';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   const niche = searchParams.get('niche')?.toLowerCase();
   const status = searchParams.get('status')?.toLowerCase();
 
-  let filtered = [...INITIAL_LEADS];
+  let filtered = [...LEADS_STORE];
 
   if (search) {
     filtered = filtered.filter(l => 
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
   return NextResponse.json({
     total: filtered.length,
     page: 1,
-    per_page: 50,
+    per_page: 100,
     pages: 1,
     data: filtered,
   });
