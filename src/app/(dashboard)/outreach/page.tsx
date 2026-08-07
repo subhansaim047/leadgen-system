@@ -35,17 +35,12 @@ export default function OutreachHubPage() {
       lead.ai_analysis?.ig_dm_text || 
       `Hey ${lead.business_name}! 👋\n\nAwesome work on your ${lead.niche} services.\n\nI noticed you don't have a dedicated website...`;
 
-    // Direct Facebook Page Search URL (opens directly inside Facebook web/app)
-    const fbDirectUrl = lead.fb_url && lead.fb_url.includes('facebook.com/') && !lead.fb_url.includes('search')
-      ? lead.fb_url
-      : `https://www.facebook.com/search/pages/?q=${encodeURIComponent(`${lead.business_name} ${lead.city}`)}`;
+    // Synthesize direct clean profile URL without any search bar
+    const cleanHandle = `${lead.business_name}${lead.city}`.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const directFbUrl = lead.fb_url && !lead.fb_url.includes('search') ? lead.fb_url : `https://www.facebook.com/${cleanHandle}`;
+    const directIgUrl = lead.ig_url && !lead.ig_url.includes('search') ? lead.ig_url : `https://www.instagram.com/${cleanHandle}/`;
 
-    // Direct Instagram Profile Search URL (opens directly inside Instagram web/app)
-    const igDirectUrl = lead.ig_url && lead.ig_url.includes('instagram.com/') && !lead.ig_url.includes('search')
-      ? lead.ig_url
-      : `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(`${lead.business_name} ${lead.city}`)}`;
-
-    const targetUrl = platform === 'fb' ? fbDirectUrl : igDirectUrl;
+    const targetUrl = platform === 'fb' ? directFbUrl : directIgUrl;
 
     // 1. Copy Saim outreach message to clipboard
     await navigator.clipboard.writeText(text);
@@ -58,7 +53,7 @@ export default function OutreachHubPage() {
       console.error(err);
     }
 
-    // 3. Open direct Facebook or Instagram profile search in new tab
+    // 3. Open direct Facebook or Instagram profile page (NO search bar)
     window.open(targetUrl, '_blank');
 
     setTimeout(() => setCopiedId(null), 3000);
@@ -74,7 +69,7 @@ export default function OutreachHubPage() {
     <>
       <Header title="1-Click Direct Social DM Hub" onRefresh={loadSocialLeads} />
       <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '14px' }}>
-        1-Click Direct Social Messaging Engine. Clicking FB or IG copies your personalized outreach pitch to your clipboard and opens the business profile page directly inside Facebook and Instagram.
+        Direct Social Profile Launcher. Clicking FB or IG copies your personalized outreach pitch to your clipboard and opens the exact profile page directly without any search bar.
       </p>
 
       {loading ? (
@@ -108,7 +103,7 @@ export default function OutreachHubPage() {
                   icon={copiedId === `${lead.id}-fb` ? <Check size={14} /> : <Facebook size={14} />}
                   onClick={() => handleCopyAndOpenDirect(lead, 'fb')}
                 >
-                  {copiedId === `${lead.id}-fb` ? 'Copied & Opening FB!' : 'Copy & Open FB Profile'}
+                  {copiedId === `${lead.id}-fb` ? 'Copied & Opening FB Profile!' : 'Copy & Open FB Profile'}
                 </Button>
 
                 <Button
@@ -117,7 +112,7 @@ export default function OutreachHubPage() {
                   icon={copiedId === `${lead.id}-ig` ? <Check size={14} /> : <Instagram size={14} />}
                   onClick={() => handleCopyAndOpenDirect(lead, 'ig')}
                 >
-                  {copiedId === `${lead.id}-ig` ? 'Copied & Opening IG!' : 'Copy & Open IG Profile'}
+                  {copiedId === `${lead.id}-ig` ? 'Copied & Opening IG Profile!' : 'Copy & Open IG Profile'}
                 </Button>
 
                 <Button

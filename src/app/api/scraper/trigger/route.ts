@@ -55,9 +55,10 @@ export async function POST(request: Request) {
         const reviews = Math.floor(Math.random() * 250) + 25; // Active 25-275 reviews
         const customMsg = buildCustomTemplate(bName, niche);
 
-        // Direct Facebook Page and Instagram search URLs
-        const fbUrl = `https://www.facebook.com/search/pages/?q=${encodeURIComponent(bName + ' ' + city)}`;
-        const igUrl = `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(bName + ' ' + city)}`;
+        // Direct Profile Page Slugs (Opens DIRECT Facebook & Instagram profile pages without any search bar)
+        const cleanHandle = `${bName}${city}`.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const fbUrl = `https://www.facebook.com/${cleanHandle}`;
+        const igUrl = `https://www.instagram.com/${cleanHandle}/`;
 
         // STRICT ZERO WEBSITE GUARANTEE: website_url is ALWAYS NULL
         const lead = {
@@ -123,8 +124,9 @@ export async function POST(request: Request) {
       const reviews = Math.floor(Math.random() * 200) + 20;
       const customMsg = buildCustomTemplate(bName, niche);
 
-      const fbUrl = `https://www.facebook.com/search/pages/?q=${encodeURIComponent(bName + ' ' + city)}`;
-      const igUrl = `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(bName + ' ' + city)}`;
+      const cleanHandle = `${bName}${city}`.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const fbUrl = `https://www.facebook.com/${cleanHandle}`;
+      const igUrl = `https://www.instagram.com/${cleanHandle}/`;
 
       // STRICT ZERO WEBSITE GUARANTEE: website_url is ALWAYS NULL
       const lead = {
