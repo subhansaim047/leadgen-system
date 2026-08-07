@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/Button/Button';
 import { fetchLeads, updateLeadStatus } from '@/lib/api';
 import { Lead } from '@/types';
-import { Facebook, Instagram, Mail, Check, ExternalLink } from 'lucide-react';
+import { Facebook, Instagram, Mail, Check, Search } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function OutreachHubPage() {
@@ -29,18 +29,16 @@ export default function OutreachHubPage() {
     loadSocialLeads();
   }, []);
 
-  const handleCopyAndOpenDirect = async (lead: Lead, platform: 'fb' | 'ig') => {
+  const handleCopyAndSearch = async (lead: Lead, platform: 'fb' | 'ig') => {
     const text = lead.ai_analysis?.social_dm_text || 
       lead.ai_analysis?.fb_dm_text || 
       lead.ai_analysis?.ig_dm_text || 
       `Hey ${lead.business_name}! 👋\n\nAwesome work on your ${lead.niche} services.\n\nI noticed you don't have a dedicated website...`;
 
-    // Synthesize direct clean profile URL without any search bar
-    const cleanHandle = `${lead.business_name}${lead.city}`.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const directFbUrl = lead.fb_url && !lead.fb_url.includes('search') ? lead.fb_url : `https://www.facebook.com/${cleanHandle}`;
-    const directIgUrl = lead.ig_url && !lead.ig_url.includes('search') ? lead.ig_url : `https://www.instagram.com/${cleanHandle}/`;
-
-    const targetUrl = platform === 'fb' ? directFbUrl : directIgUrl;
+    // Clean username without spaces + fb or insta (No location)
+    const cleanUsername = lead.business_name.replace(/[^a-zA-Z0-9]/g, '');
+    const suffix = platform === 'fb' ? 'fb' : 'insta';
+    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(`${cleanUsername} ${suffix}`)}`;
 
     // 1. Copy Saim outreach message to clipboard
     await navigator.clipboard.writeText(text);
@@ -48,13 +46,13 @@ export default function OutreachHubPage() {
 
     // 2. Update status to contacted
     try {
-      await updateLeadStatus(lead.id, 'contacted', `Direct ${platform.toUpperCase()} profile launched`);
+      await updateLeadStatus(lead.id, 'contacted', `DM copied & Google Search launched for ${cleanUsername} ${suffix}`);
     } catch (err) {
       console.error(err);
     }
 
-    // 3. Open direct Facebook or Instagram profile page (NO search bar)
-    window.open(targetUrl, '_blank');
+    // 3. Open Google Search tab
+    window.open(googleSearchUrl, '_blank');
 
     setTimeout(() => setCopiedId(null), 3000);
   };
@@ -67,9 +65,9 @@ export default function OutreachHubPage() {
 
   return (
     <>
-      <Header title="1-Click Direct Social DM Hub" onRefresh={loadSocialLeads} />
+      <Header title="1-Click Social DM Hub" onRefresh={loadSocialLeads} />
       <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '14px' }}>
-        Direct Social Profile Launcher. Clicking FB or IG copies your personalized outreach pitch to your clipboard and opens the exact profile page directly without any search bar.
+        Clicking FB or IG copies your personalized outreach pitch to your clipboard and launches a Google Search for <strong>[username_without_spaces] fb</strong> or <strong>[username_without_spaces] insta</strong>.
       </p>
 
       {loading ? (
@@ -80,52 +78,55 @@ export default function OutreachHubPage() {
         </div>
       ) : (
         <div className={styles.grid}>
-          {leads.map((lead) => (
-            <div key={lead.id} className="card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div>
-                <div className={styles.cardHeader}>
-                  <div>
-                    <div className={styles.title}>{lead.business_name}</div>
-                    <div className={styles.subtitle}>{lead.city}, {lead.country} • {lead.niche}</div>
+          {leads.map((lead) => {
+            const cleanUser = lead.business_name.replace(/[^a-zA-Z0-9]/g, '');
+            return (
+              <div key={lead.id} className="card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div className={styles.cardHeader}>
+                    <div>
+                      <div className={styles.title}>{lead.business_name}</div>
+                      <div className={styles.subtitle}>{lead.city}, {lead.country} • {lead.niche}</div>
+                    </div>
+                  </div>
+
+                  {/* DM Preview */}
+                  <div className={styles.msgBox} style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '6px', fontSize: '13px', margin: '12px 0', borderLeft: '3px solid var(--accent-primary)', whiteSpace: 'pre-line' }}>
+                    {lead.ai_analysis?.social_dm_text || `Hey ${lead.business_name}! 👋 Awesome work on your ${lead.niche}...`}
                   </div>
                 </div>
 
-                {/* DM Preview */}
-                <div className={styles.msgBox} style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '6px', fontSize: '13px', margin: '12px 0', borderLeft: '3px solid var(--accent-primary)', whiteSpace: 'pre-line' }}>
-                  {lead.ai_analysis?.social_dm_text || `Hey ${lead.business_name}! 👋 Awesome work on your ${lead.niche}...`}
+                <div className={styles.platformButtons} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    icon={copiedId === `${lead.id}-fb` ? <Check size={14} /> : <Facebook size={14} />}
+                    onClick={() => handleCopyAndSearch(lead, 'fb')}
+                  >
+                    {copiedId === `${lead.id}-fb` ? 'Copied & Searching FB!' : `Copy & Search "${cleanUser} fb"`}
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={copiedId === `${lead.id}-ig` ? <Check size={14} /> : <Instagram size={14} />}
+                    onClick={() => handleCopyAndSearch(lead, 'ig')}
+                  >
+                    {copiedId === `${lead.id}-ig` ? 'Copied & Searching IG!' : `Copy & Search "${cleanUser} insta"`}
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={<Mail size={14} />}
+                    onClick={() => handleOpenMailto(lead)}
+                  >
+                    Mailto
+                  </Button>
                 </div>
               </div>
-
-              <div className={styles.platformButtons} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon={copiedId === `${lead.id}-fb` ? <Check size={14} /> : <Facebook size={14} />}
-                  onClick={() => handleCopyAndOpenDirect(lead, 'fb')}
-                >
-                  {copiedId === `${lead.id}-fb` ? 'Copied & Opening FB Profile!' : 'Copy & Open FB Profile'}
-                </Button>
-
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  icon={copiedId === `${lead.id}-ig` ? <Check size={14} /> : <Instagram size={14} />}
-                  onClick={() => handleCopyAndOpenDirect(lead, 'ig')}
-                >
-                  {copiedId === `${lead.id}-ig` ? 'Copied & Opening IG Profile!' : 'Copy & Open IG Profile'}
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={<Mail size={14} />}
-                  onClick={() => handleOpenMailto(lead)}
-                >
-                  Mailto
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </>
