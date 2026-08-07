@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { LEADS_STORE } from './data';
+import { LEADS_STORE, clearAllLeads } from './data';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -32,4 +32,9 @@ export async function GET(request: Request) {
     pages: 1,
     data: filtered,
   });
+}
+
+export async function DELETE() {
+  clearAllLeads();
+  return NextResponse.json({ status: 'cleared', message: 'All leads deleted successfully' });
 }

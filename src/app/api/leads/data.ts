@@ -12,119 +12,21 @@ I built a FREE demo site for you. Want to see it? No cost, no strings.
 WhatsApp: +1 (249) 898-4111`;
 };
 
-export const INITIAL_LEADS = [
-  {
-    id: 'lead-101',
-    business_name: 'Apex Dental Care',
-    niche: 'Dental Clinic',
-    country: 'USA',
-    city: 'Austin',
-    address: '1042 Colorado St, Austin, TX 78701',
-    phone: '+1 (512) 555-0192',
-    normalized_phone: '5125550192',
-    website_url: null,
-    website_type: 'none',
-    google_rating: 4.8,
-    review_count: 142,
-    google_maps_url: 'https://maps.google.com/?q=Apex+Dental+Care+Austin',
-    confidence_score: 95,
-    status: 'new',
-    created_at: new Date().toISOString(),
-    audit: {
-      id: 'audit-101',
-      has_ssl: false,
-      is_mobile_friendly: false,
-      load_time_seconds: 0,
-      cms_detected: 'none',
-      audit_score: 15,
-      issues: ['No Website Found', 'Missing SSL Certificate', 'No Online Booking System'],
-      summary: 'High opportunity prospect: Top rated Google Maps dental clinic with 142 reviews but zero website footprint.'
-    },
-    ai_analysis: {
-      opportunity_level: 'High',
-      estimated_deal_size: '$2,500 - $4,000',
-      recommended_pitch: 'Offer modern Next.js responsive website with 1-click online appointment booking system.',
-      cold_email_subject: 'Custom website demo for Apex Dental Care',
-      cold_email_body: buildCustomTemplate('Apex Dental Care', 'Dental Clinic'),
-      social_dm_text: buildCustomTemplate('Apex Dental Care', 'Dental Clinic')
-    }
-  },
-  {
-    id: 'lead-102',
-    business_name: 'Pro Auto Detailing',
-    niche: 'Auto Detailing',
-    country: 'USA',
-    city: 'Austin',
-    address: '2801 E 7th St, Austin, TX 78702',
-    phone: '+1 (512) 555-0481',
-    normalized_phone: '5125550481',
-    website_url: 'http://proautodetailingaustin.olddomain.com',
-    website_type: 'outdated',
-    google_rating: 4.6,
-    review_count: 89,
-    google_maps_url: 'https://maps.google.com/?q=Pro+Auto+Detailing+Austin',
-    confidence_score: 88,
-    status: 'new',
-    created_at: new Date().toISOString(),
-    audit: {
-      id: 'audit-102',
-      has_ssl: false,
-      is_mobile_friendly: false,
-      load_time_seconds: 6.8,
-      cms_detected: 'wordpress_legacy',
-      audit_score: 32,
-      issues: ['Insecure HTTP', 'Fails Mobile Viewport Test', 'Slow Load Time (6.8s)'],
-      summary: 'Legacy WordPress website running on HTTP with poor mobile formatting.'
-    },
-    ai_analysis: {
-      opportunity_level: 'High',
-      estimated_deal_size: '$1,800 - $3,000',
-      recommended_pitch: 'Redesign website with modern dark-mode aesthetic, SSL encryption, and high speed.',
-      cold_email_subject: 'Upgrading Pro Auto Detailing mobile website',
-      cold_email_body: buildCustomTemplate('Pro Auto Detailing', 'Auto Detailing'),
-      social_dm_text: buildCustomTemplate('Pro Auto Detailing', 'Auto Detailing')
-    }
-  },
-  {
-    id: 'lead-103',
-    business_name: 'Precision Plumbing Pros',
-    niche: 'Plumbers',
-    country: 'USA',
-    city: 'Dallas',
-    address: '4512 Main St, Dallas, TX 75201',
-    phone: '+1 (214) 555-0133',
-    normalized_phone: '2145550133',
-    website_url: null,
-    website_type: 'none',
-    google_rating: 4.9,
-    review_count: 210,
-    google_maps_url: 'https://maps.google.com/?q=Precision+Plumbing+Dallas',
-    confidence_score: 92,
-    status: 'contacted',
-    created_at: new Date().toISOString(),
-    audit: {
-      id: 'audit-103',
-      has_ssl: false,
-      is_mobile_friendly: false,
-      load_time_seconds: 0,
-      cms_detected: 'none',
-      audit_score: 10,
-      issues: ['No Website Found', 'Missing Emergency Call Out Button'],
-      summary: 'Top rated Dallas plumber with 210 reviews operating exclusively via Google Maps.'
-    },
-    ai_analysis: {
-      opportunity_level: 'High',
-      estimated_deal_size: '$2,000 - $3,500',
-      recommended_pitch: '24/7 Emergency Plumbing Website with Tap-to-Call button.',
-      cold_email_subject: 'Emergency Plumbing Website prototype for Precision Plumbing',
-      cold_email_body: buildCustomTemplate('Precision Plumbing Pros', 'Plumbing'),
-      social_dm_text: buildCustomTemplate('Precision Plumbing Pros', 'Plumbing')
-    }
-  }
-];
+// Global in-memory store initialized as empty array (No dummy leads)
+export const LEADS_STORE: any[] = [];
 
-// Global in-memory store for newly generated leads
-export const LEADS_STORE = [...INITIAL_LEADS];
+export function clearAllLeads() {
+  LEADS_STORE.length = 0;
+}
+
+export function deleteLeadById(id: string) {
+  const index = LEADS_STORE.findIndex(l => l.id === id);
+  if (index !== -1) {
+    LEADS_STORE.splice(index, 1);
+    return true;
+  }
+  return false;
+}
 
 export function generateAndAddLeads(niche: string, city: string, country: string, count: number = 50) {
   const prefixes = ['Apex', 'Prime', 'Elite', 'Pro', 'Star', 'Master', 'Quality', 'Express', 'Golden', 'Precision', 'Royal', 'Ultimate', 'Select', 'Summit', 'Vanguard'];

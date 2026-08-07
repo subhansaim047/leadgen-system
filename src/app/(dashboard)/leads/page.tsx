@@ -5,9 +5,9 @@ import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { Modal } from '@/components/ui/Modal/Modal';
-import { fetchLeads, fetchLeadDetail, triggerAudit, updateLeadStatus } from '@/lib/api';
+import { fetchLeads, fetchLeadDetail, triggerAudit, updateLeadStatus, deleteLead, deleteAllLeads } from '@/lib/api';
 import { Lead } from '@/types';
-import { Search, Filter, Eye, Send, Play, ExternalLink, Check, Copy } from 'lucide-react';
+import { Search, Filter, Eye, Send, Play, ExternalLink, Check, Copy, Trash2 } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function LeadsPage() {
@@ -89,6 +89,20 @@ export default function LeadsPage() {
     loadLeads();
   };
 
+  const handleDeleteSingle = async (leadId: string, bName: string) => {
+    if (confirm(`Delete "${bName}" from CRM?`)) {
+      await deleteLead(leadId);
+      loadLeads();
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (confirm('⚠️ Are you sure you want to CLEAR ALL LEADS from your CRM? This will delete all scraped leads so you can start fresh.')) {
+      await deleteAllLeads();
+      loadLeads();
+    }
+  };
+
   const copyToClipboard = (text: string, type: 'subject' | 'body' | 'dm') => {
     navigator.clipboard.writeText(text);
     if (type === 'subject') {
@@ -143,43 +157,51 @@ export default function LeadsPage() {
         onExport={() => window.open('/api/export/csv', '_blank')}
       />
 
-      <div className={styles.filterBar}>
-        <form onSubmit={handleSearchSubmit} className={styles.searchGroup}>
-          <input
-            type="text"
-            placeholder="Search business name, city, niche..."
-            className={styles.searchInput}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <Button type="submit" variant="secondary" icon={<Search size={14} />}>
-            Search
+      <div className={styles.filterBar} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', flex: 1 }}>
+          <form onSubmit={handleSearchSubmit} className={styles.searchGroup}>
+            <input
+              type="text"
+              placeholder="Search business name, city, niche..."
+              className={styles.searchInput}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Button type="submit" variant="secondary" icon={<Search size={14} />}>
+              Search
+            </Button>
+          </form>
+
+          <select
+            className={styles.selectInput}
+            value={websiteFilter}
+            onChange={(e) => setWebsiteFilter(e.target.value)}
+          >
+            <option value="">All Website Types</option>
+            <option value="none">No Website</option>
+            <option value="outdated">Outdated Website</option>
+            <option value="broken">Broken Website</option>
+            <option value="modern">Modern Website</option>
+          </select>
+
+          <select
+            className={styles.selectInput}
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="">All Statuses</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="replied">Replied</option>
+            <option value="converted">Converted</option>
+          </select>
+        </div>
+
+        {leads.length > 0 && (
+          <Button variant="danger" size="sm" icon={<Trash2 size={14} />} onClick={handleClearAll}>
+            Clear All Leads ({total})
           </Button>
-        </form>
-
-        <select
-          className={styles.selectInput}
-          value={websiteFilter}
-          onChange={(e) => setWebsiteFilter(e.target.value)}
-        >
-          <option value="">All Website Types</option>
-          <option value="none">No Website</option>
-          <option value="outdated">Outdated Website</option>
-          <option value="broken">Broken Website</option>
-          <option value="modern">Modern Website</option>
-        </select>
-
-        <select
-          className={styles.selectInput}
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="">All Statuses</option>
-          <option value="new">New</option>
-          <option value="contacted">Contacted</option>
-          <option value="replied">Replied</option>
-          <option value="converted">Converted</option>
-        </select>
+        )}
       </div>
 
       <div className={styles.tableWrapper}>
@@ -203,8 +225,8 @@ export default function LeadsPage() {
               </tr>
             ) : leads.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '30px' }}>
-                  No leads found. Trigger a job from Settings to generate leads!
+                <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
+                  CRM is empty (0 leads). Go to Settings to start a new lead scraping job!
                 </td>
               </tr>
             ) : (
@@ -228,7 +250,7 @@ export default function LeadsPage() {
                     </td>
                     <td>{getStatusBadge(lead.status)}</td>
                     <td>
-                      <div className={styles.actionCell}>
+                      <div className={styles.actionCell} style={{ display: 'flex', gap: '6px' }}>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -238,20 +260,20 @@ export default function LeadsPage() {
                           View
                         </Button>
                         <Button
-                          variant="secondary"
-                          size="sm"
-                          icon={<Play size={14} />}
-                          onClick={() => handleTriggerAudit(lead.id)}
-                        >
-                          Audit
-                        </Button>
-                        <Button
                           variant="primary"
                           size="sm"
                           icon={<Send size={14} />}
                           onClick={() => handleSendEmail(lead)}
                         >
-                          Send Email
+                          Email
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          icon={<Trash2 size={14} />}
+                          onClick={() => handleDeleteSingle(lead.id, lead.business_name)}
+                        >
+                          Delete
                         </Button>
                       </div>
                     </td>

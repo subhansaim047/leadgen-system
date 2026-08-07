@@ -42,13 +42,18 @@ export async function updateLeadStatus(id: string, status: string, notes?: strin
   if (!res.ok) throw new Error('Failed to update lead status');
 }
 
-export async function bulkUpdateStatus(ids: string[], status: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/leads/bulk-status`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ lead_ids: ids, status }),
+export async function deleteLead(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/leads/${id}`, {
+    method: 'DELETE',
   });
-  if (!res.ok) throw new Error('Failed to bulk update status');
+  if (!res.ok) throw new Error('Failed to delete lead');
+}
+
+export async function deleteAllLeads(): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/leads`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to clear all leads');
 }
 
 export async function triggerScrape(data: {
@@ -57,7 +62,7 @@ export async function triggerScrape(data: {
   country: string;
   limit?: number;
   source?: string;
-}): Promise<{ job_id: string }> {
+}): Promise<{ job_id: string; total_new?: number }> {
   const res = await fetch(`${API_BASE}/api/scraper/trigger`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
