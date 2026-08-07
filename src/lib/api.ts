@@ -1,6 +1,6 @@
 import { Lead, OverviewStats } from '@/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://leadgen-system-production-cc0f.up.railway.app';
 
 export async function fetchLeads(params?: {
   page?: number;
