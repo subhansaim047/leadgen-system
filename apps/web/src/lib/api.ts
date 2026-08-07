@@ -53,7 +53,7 @@ export async function bulkUpdateStatus(ids: string[], status: string): Promise<v
 export async function triggerScrape(data: {
   niche: string;
   city: string;
-  country: str;
+  country: string;
   limit?: number;
   source?: string;
 }): Promise<{ job_id: string }> {
