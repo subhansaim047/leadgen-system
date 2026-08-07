@@ -112,7 +112,7 @@ export const INITIAL_LEADS = [
 // Global in-memory store for newly generated leads
 export const LEADS_STORE = [...INITIAL_LEADS];
 
-export function generateAndAddLeads(niche: string, city: str, country: str, count: number = 50) {
+export function generateAndAddLeads(niche: string, city: string, country: string, count: number = 50) {
   const prefixes = ['Apex', 'Prime', 'Elite', 'Pro', 'Star', 'Master', 'Quality', 'Express', 'Golden', 'Precision', 'Royal', 'Ultimate', 'Select', 'Summit', 'Vanguard'];
   const suffixes = ['Services', 'Hub', 'Center', 'Group', 'Solutions', 'Co.', 'Experts', 'Clinic', 'Studio', 'Works', 'Pros', 'Specialists'];
 
