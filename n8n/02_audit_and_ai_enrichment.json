@@ -1,0 +1,47 @@
+{
+  "name": "02_Batch_Audit_and_AI_Enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 2 * * *"
+            }
+          ]
+        }
+      },
+      "id": "1",
+      "name": "Cron (Everyday 2:30 AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/api/audit/trigger-batch",
+        "options": {}
+      },
+      "id": "2",
+      "name": "Trigger Batch Audit & AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "Cron (Everyday 2:30 AM)": {
+      "main": [
+        [
+          {
+            "node": "Trigger Batch Audit & AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

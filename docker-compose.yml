@@ -1,0 +1,123 @@
+version: '3.8'
+
+services:
+  # ─── PostgreSQL Database ───────────────────────────────────────────
+  db:
+    image: postgres:15-alpine
+    container_name: leadgen_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── FastAPI Backend ───────────────────────────────────────────────
+  api:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: leadgen_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - ./apps/backend:/app
+      - screenshots_data:/app/screenshots
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─── Next.js Frontend Dashboard ───────────────────────────────────
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: leadgen_web
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  # ─── n8n Automation Engine ────────────────────────────────────────
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: leadgen_n8n
+    restart: unless-stopped
+    environment:
+      - N8N_HOST=${N8N_HOST}
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=db
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      - WEBHOOK_URL=https://n8n.yourdomain.com/
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n:/home/node/.n8n/workflows
+    ports:
+      - "5678:5678"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ─── Nginx Reverse Proxy ──────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: leadgen_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - certbot_webroot:/var/www/certbot:ro
+    depends_on:
+      - web
+      - api
+      - n8n
+
+  # ─── Certbot SSL ──────────────────────────────────────────────────
+  certbot:
+    image: certbot/certbot:latest
+    container_name: leadgen_certbot
+    volumes:
+      - ./nginx/ssl:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+volumes:
+  postgres_data:
+  n8n_data:
+  screenshots_data:
+  certbot_webroot:
+
+networks:
+  default:
+    name: leadgen_network

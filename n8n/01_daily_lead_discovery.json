@@ -1,0 +1,50 @@
+{
+  "name": "01_Daily_Lead_Discovery_Cron",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 2 * * *"
+            }
+          ]
+        }
+      },
+      "id": "1",
+      "name": "Cron (Everyday 2:00 AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/api/scraper/trigger",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"niche\": \"Auto Detailing\",\n  \"city\": \"Austin\",\n  \"country\": \"USA\",\n  \"limit\": 50,\n  \"source\": \"outscraper\"\n}",
+        "options": {}
+      },
+      "id": "2",
+      "name": "Trigger Outscraper Discovery",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "Cron (Everyday 2:00 AM)": {
+      "main": [
+        [
+          {
+            "node": "Trigger Outscraper Discovery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
