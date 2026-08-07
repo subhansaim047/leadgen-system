@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { INITIAL_LEADS } from '../route';
+import { INITIAL_LEADS } from '../data';
 
 export async function GET(
   request: Request,
