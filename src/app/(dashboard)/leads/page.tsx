@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { Modal } from '@/components/ui/Modal/Modal';
-import { fetchLeads, fetchLeadDetail, triggerAudit, sendEmail, updateLeadStatus } from '@/lib/api';
+import { fetchLeads, fetchLeadDetail, triggerAudit, updateLeadStatus } from '@/lib/api';
 import { Lead } from '@/types';
 import { Search, Filter, Eye, Send, Play, ExternalLink, Check, Copy } from 'lucide-react';
 import styles from './page.module.css';
@@ -73,9 +73,19 @@ export default function LeadsPage() {
     loadLeads();
   };
 
-  const handleSendEmail = async (leadId: string) => {
-    await sendEmail(leadId);
-    alert('✅ Email outreach queued for dispatch!');
+  const handleSendEmail = async (lead: Lead) => {
+    const emailTo = lead.email || `info@${lead.business_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
+    const subject = encodeURIComponent(lead.ai_analysis?.cold_email_subject || `FREE demo website for ${lead.business_name}`);
+    const bodyText = lead.ai_analysis?.cold_email_body || 
+      `Hey ${lead.business_name}! 👋\n\nAwesome work on your ${lead.niche} services.\n\nI noticed you don't have a dedicated website. You're likely losing potential customers every day because people searching "${lead.niche} near me" on Google are booking competitors with websites instead.\n\nI built a FREE demo site for you. Want to see it? No cost, no strings.\n\n— Saim | Full-Stack Web Developer\nWhatsApp: +1 (249) 898-4111`;
+    
+    const body = encodeURIComponent(bodyText);
+
+    try {
+      await updateLeadStatus(lead.id, 'contacted', 'Email client launched');
+    } catch (e) {}
+
+    window.open(`mailto:${emailTo}?subject=${subject}&body=${body}`, '_blank');
     loadLeads();
   };
 
@@ -239,9 +249,9 @@ export default function LeadsPage() {
                           variant="primary"
                           size="sm"
                           icon={<Send size={14} />}
-                          onClick={() => handleSendEmail(lead.id)}
+                          onClick={() => handleSendEmail(lead)}
                         >
-                          Email
+                          Send Email
                         </Button>
                       </div>
                     </td>
@@ -287,7 +297,7 @@ export default function LeadsPage() {
               <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
                 Close
               </Button>
-              <Button variant="primary" icon={<Send size={14} />} onClick={() => handleSendEmail(selectedLead.id)}>
+              <Button variant="primary" icon={<Send size={14} />} onClick={() => handleSendEmail(selectedLead)}>
                 Send AI Email Pitch
               </Button>
             </>
@@ -334,7 +344,7 @@ export default function LeadsPage() {
                 </Button>
               </p>
 
-              <div className={styles.copyBox} style={{ marginTop: '8px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '6px' }}>
+              <div className={styles.copyBox} style={{ marginTop: '8px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '6px', whiteSpace: 'pre-line' }}>
                 {selectedLead.ai_analysis.cold_email_body || selectedLead.ai_analysis.email_body}
               </div>
               <Button
@@ -348,7 +358,7 @@ export default function LeadsPage() {
               </Button>
 
               <p style={{ marginTop: '16px' }}><strong>1-Click Social DM Text:</strong></p>
-              <div className={styles.copyBox} style={{ marginTop: '4px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '6px' }}>
+              <div className={styles.copyBox} style={{ marginTop: '4px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '6px', whiteSpace: 'pre-line' }}>
                 {selectedLead.ai_analysis.social_dm_text || selectedLead.ai_analysis.fb_dm_text || selectedLead.ai_analysis.ig_dm_text}
               </div>
               <Button
