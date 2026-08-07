@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card/Card';
 import { fetchStats } from '@/lib/api';
 import { OverviewStats } from '@/types';
-import { Users, GlobeX, AlertTriangle, Send, MessageSquareCheck, TrendingUp } from 'lucide-react';
+import { Users, Globe, AlertTriangle, Send, MessageSquare, TrendingUp } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function OverviewPage() {
@@ -42,7 +42,7 @@ export default function OverviewPage() {
           title="No Website Opportunities"
           value={loading ? '...' : stats?.no_website || 0}
           subtext="High priority target leads"
-          icon={<GlobeX size={20} color="var(--accent-danger)" />}
+          icon={<Globe size={20} color="var(--accent-danger)" />}
         />
         <Card
           title="Outdated Websites"
@@ -60,7 +60,7 @@ export default function OverviewPage() {
           title="Replies Received"
           value={loading ? '...' : stats?.by_status?.replied || 0}
           subtext="Active conversations"
-          icon={<MessageSquareCheck size={20} color="var(--accent-success)" />}
+          icon={<MessageSquare size={20} color="var(--accent-success)" />}
         />
       </div>
 
