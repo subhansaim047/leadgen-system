@@ -1,3 +1,17 @@
+export const buildCustomTemplate = (businessName: string, niche: string) => {
+  const n = niche || 'services';
+  return `Hey ${businessName}! 👋
+
+Awesome work on your ${n.toLowerCase()} services.
+
+I noticed you don't have a dedicated website. You're likely losing potential customers every day because people searching "${n.toLowerCase()} near me" on Google are booking competitors with websites instead.
+
+I built a FREE demo site for you. Want to see it? No cost, no strings.
+
+— Saim | Full-Stack Web Developer
+WhatsApp: +1 (249) 898-4111`;
+};
+
 export const INITIAL_LEADS = [
   {
     id: 'lead-101',
@@ -30,9 +44,9 @@ export const INITIAL_LEADS = [
       opportunity_level: 'High',
       estimated_deal_size: '$2,500 - $4,000',
       recommended_pitch: 'Offer modern Next.js responsive website with 1-click online appointment booking system.',
-      cold_email_subject: 'Quick question regarding online bookings for Apex Dental Care',
-      cold_email_body: 'Hi Dr. Team,\n\nI noticed Apex Dental Care has 142 amazing 5-star Google reviews in Austin, but patients looking to book online cannot find an official website.\n\nWe build high-converting, mobile-friendly dental clinic websites with automated booking systems.\n\nWould you be open to seeing a 2-minute prototype built specifically for Apex Dental Care?',
-      social_dm_text: 'Hey Apex Dental team! 👋 Noticed you have 140+ 5-star reviews in Austin but no website for online bookings. We built a quick prototype for you — mind if I drop a link here?'
+      cold_email_subject: 'Custom website demo for Apex Dental Care',
+      cold_email_body: buildCustomTemplate('Apex Dental Care', 'Dental Clinic'),
+      social_dm_text: buildCustomTemplate('Apex Dental Care', 'Dental Clinic')
     }
   },
   {
@@ -67,8 +81,8 @@ export const INITIAL_LEADS = [
       estimated_deal_size: '$1,800 - $3,000',
       recommended_pitch: 'Redesign website with modern dark-mode aesthetic, SSL encryption, and high speed.',
       cold_email_subject: 'Upgrading Pro Auto Detailing mobile website',
-      cold_email_body: 'Hi Team,\n\nI visited your website on mobile and noticed it takes 6.8 seconds to load and displays security warnings.\n\nWe specialize in high-speed auto detailing websites that convert local Austin traffic into booked appointments.\n\nCan I send over a free 1-page modern preview?',
-      social_dm_text: 'Hey Pro Auto Detailing! 🚗 Love your work in Austin. Noticed your site runs a bit slow on phones. Mind if I share a quick modern redesign preview?'
+      cold_email_body: buildCustomTemplate('Pro Auto Detailing', 'Auto Detailing'),
+      social_dm_text: buildCustomTemplate('Pro Auto Detailing', 'Auto Detailing')
     }
   },
   {
@@ -103,8 +117,8 @@ export const INITIAL_LEADS = [
       estimated_deal_size: '$2,000 - $3,500',
       recommended_pitch: '24/7 Emergency Plumbing Website with Tap-to-Call button.',
       cold_email_subject: 'Emergency Plumbing Website prototype for Precision Plumbing',
-      cold_email_body: 'Hi Precision Plumbing team,\n\nWith 210 reviews in Dallas, you are losing after-hours emergency calls because potential clients cannot find an official website.\n\nWould you like to see a tap-to-call website design built for your team?',
-      social_dm_text: 'Hey Precision Plumbing! 🔧 Saw your 210 reviews in Dallas. We built a fast tap-to-call website template for plumbers. Can I drop a quick demo link?'
+      cold_email_body: buildCustomTemplate('Precision Plumbing Pros', 'Plumbing'),
+      social_dm_text: buildCustomTemplate('Precision Plumbing Pros', 'Plumbing')
     }
   }
 ];
@@ -135,6 +149,8 @@ export function generateAndAddLeads(niche: string, city: string, country: string
     const id = `lead-gen-${Date.now()}-${i}`;
     const rating = Number((Math.random() * 1.2 + 3.8).toFixed(1));
     const reviews = Math.floor(Math.random() * 180) + 15;
+
+    const templateText = buildCustomTemplate(bName, n);
 
     const newLead = {
       id,
@@ -167,9 +183,9 @@ export function generateAndAddLeads(niche: string, city: string, country: string
         opportunity_level: 'High',
         estimated_deal_size: '$1,800 - $3,500',
         recommended_pitch: `Build high-converting Next.js website for ${bName}.`,
-        cold_email_subject: `Digital presence for ${bName} in ${c}`,
-        cold_email_body: `Hi ${bName} team,\n\nI noticed your business in ${c} has ${reviews} great reviews but lacks a modern mobile site.\n\nWould you like to see a custom prototype built for your business?`,
-        social_dm_text: `Hey ${bName} team! 👋 Saw your ${reviews} 5-star reviews in ${c}. We built a quick mobile website prototype for you — mind if I drop a link?`
+        cold_email_subject: `FREE demo website for ${bName}`,
+        cold_email_body: templateText,
+        social_dm_text: templateText
       }
     };
 

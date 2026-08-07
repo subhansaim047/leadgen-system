@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { LEADS_STORE } from '../../leads/data';
+import { LEADS_STORE, buildCustomTemplate } from '../../leads/data';
 
 interface ScrapeBody {
   niche: string;
@@ -72,6 +72,7 @@ export async function POST(request: Request) {
         const leadId = `lead-live-${Date.now()}-${i}`;
         const rating = Number((Math.random() * 1.2 + 3.8).toFixed(1));
         const reviews = Math.floor(Math.random() * 220) + 18;
+        const customMsg = buildCustomTemplate(bName, niche);
 
         const lead = {
           id: leadId,
@@ -106,9 +107,9 @@ export async function POST(request: Request) {
             opportunity_level: 'High',
             estimated_deal_size: '$2,000 - $4,500',
             recommended_pitch: `Build modern high-speed responsive website for ${bName} in ${city}.`,
-            cold_email_subject: `Digital website proposal for ${bName}`,
-            cold_email_body: `Hi ${bName} team,\n\nI noticed your business in ${city} has fantastic reviews but lacks a modern mobile-responsive website.\n\nWe build high-converting websites for ${niche} businesses.\n\nWould you be open to seeing a free 2-minute prototype preview?`,
-            social_dm_text: `Hey ${bName} team! 👋 Saw your great reviews in ${city}. We built a fast mobile website prototype for local ${niche} businesses — mind if I drop a quick link?`
+            cold_email_subject: `FREE demo website for ${bName}`,
+            cold_email_body: customMsg,
+            social_dm_text: customMsg
           }
         };
 
@@ -136,6 +137,7 @@ export async function POST(request: Request) {
       const id = `lead-gen-${Date.now()}-${k}`;
       const rating = Number((Math.random() * 1.2 + 3.8).toFixed(1));
       const reviews = Math.floor(Math.random() * 180) + 15;
+      const customMsg = buildCustomTemplate(bName, niche);
 
       const lead = {
         id,
@@ -170,9 +172,9 @@ export async function POST(request: Request) {
           opportunity_level: 'High',
           estimated_deal_size: '$1,800 - $3,500',
           recommended_pitch: `Build high-converting Next.js website for ${bName}.`,
-          cold_email_subject: `Digital presence for ${bName} in ${city}`,
-          cold_email_body: `Hi ${bName} team,\n\nI noticed your business in ${city} has ${reviews} great reviews but lacks a modern mobile site.\n\nWould you like to see a custom prototype built for your business?`,
-          social_dm_text: `Hey ${bName} team! 👋 Saw your ${reviews} 5-star reviews in ${city}. We built a quick mobile website prototype for you — mind if I drop a link?`
+          cold_email_subject: `FREE demo website for ${bName}`,
+          cold_email_body: customMsg,
+          social_dm_text: customMsg
         }
       };
 
