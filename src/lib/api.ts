@@ -1,6 +1,7 @@
 import { Lead, OverviewStats } from '@/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://leadgen-system-production-cc0f.up.railway.app';
+// Default to empty string for native Next.js API routes on Vercel
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 export async function fetchLeads(params?: {
   page?: number;
