@@ -5,7 +5,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const search = searchParams.get('search')?.toLowerCase();
   const niche = searchParams.get('niche')?.toLowerCase();
-  const status = searchParams.get('status')?.toLowerCase();
+  const websiteType = searchParams.get('website_type')?.toLowerCase();
 
   let filtered = getPersistedLeads();
 
@@ -23,6 +23,10 @@ export async function GET(request: Request) {
 
   if (status && status !== 'all') {
     filtered = filtered.filter(l => l.status.toLowerCase() === status);
+  }
+
+  if (websiteType && websiteType !== 'all' && websiteType !== '') {
+    filtered = filtered.filter(l => l.website_type.toLowerCase() === websiteType);
   }
 
   return NextResponse.json({
