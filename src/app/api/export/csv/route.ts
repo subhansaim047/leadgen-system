@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
-import { LEADS_STORE } from '../../leads/data';
+import { LEADS_STORE, markLeadsAsExported } from '../../leads/data';
 
 export async function GET() {
+  // Save exported leads to permanent blacklist history so they are NEVER returned again in future scrapes!
+  markLeadsAsExported(LEADS_STORE);
+
   const headers = [
     'Business Name',
     'Niche',
