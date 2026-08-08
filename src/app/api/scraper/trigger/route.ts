@@ -226,22 +226,75 @@ const REAL_CITY_REGISTRIES: Record<string, Record<string, string[]>> = {
   }
 };
 
-// Strict City-Bound Area Landmarks
+// Strict City-Bound Area Landmarks for ALL 22 Countries
 const CITY_BOUND_LANDMARKS: Record<string, string[]> = {
+  // Pakistan
   'daska': ['Civil Hospital Road', 'College Road', 'Nishtar Road', 'Canal Bank', 'Pasrur Road', 'Sambrial Road', 'Main Market', 'Kutchery Road', 'Circular Road'],
   'gujranwala': ['Satellite Town', 'Model Town', 'Peoples Colony', 'DC Colony', 'Wapda Town', 'Shaheenabad', 'Trust Plaza', 'Garden Town', 'GT Road', 'Canal View'],
   'sialkot': ['Paris Road', 'Cantt Area', 'Kashmir Road', 'Defence Road', 'Commissioner Road', 'Saddar Bazaar', 'Kutchery Road', 'Abbott Road'],
   'lahore': ['Gulberg III', 'DHA Phase 5', 'MM Alam Road', 'Model Town', 'Johar Town', 'Wapda Town', 'Garden Town', 'Mall Road'],
-  'karachi': ['Clifton Block 4', 'Defence Phase 6', 'PECHS', 'Tariq Road', 'North Nazimabad', 'Gulshan-e-Iqbal'],
-  'islamabad': ['F-7 Markaz', 'F-6 Markaz', 'Blue Area', 'E-11', 'G-9 Markaz', 'I-8 Markaz'],
+  'karachi': ['Clifton Block 4', 'Defence Phase 6', 'PECHS', 'Tariq Road', 'North Nazimabad', 'Gulshan-e-Iqbal', 'Saddar'],
+  'islamabad': ['F-7 Markaz', 'F-6 Markaz', 'Blue Area', 'E-11', 'G-9 Markaz', 'I-8 Markaz', 'DHA Phase 2'],
+  'faisalabad': ['D Ground', 'People\'s Colony 1', 'Canal Road', 'Kohinoor City', 'Satyana Road'],
+  'rawalpindi': ['Saddar', 'Commercial Market', 'Satellite Town', 'Bahria Town Phase 4', 'PWD Society'],
+  'peshawar': ['University Road', 'Hayatabad Phase 3', 'Saddar Road', 'G T Road', 'Peshawar Cantt'],
+  'multan': ['Gulgasht Colony', 'Bosan Road', 'Cantonment Area', 'Abdali Road', 'Nishtar Road'],
+
+  // Germany
   'berlin': ['Mitte', 'Kurfürstendamm', 'Friedrichstraße', 'Kreuzberg', 'Prenzlauer Berg', 'Charlottenburg'],
+  'munich': ['Altstadt', 'Schwabing', 'Maxvorstadt', 'Bogenhausen', 'Sendling', 'Glockenbachviertel'],
+  'hamburg': ['Altona', 'HafenCity', 'Eimsbüttel', 'St. Pauli', 'Winterhude', 'Wandsbek'],
+  'frankfurt': ['Innenstadt', 'Sachsenhausen', 'Westend', 'Nordend', 'Bornheim'],
+  'cologne': ['Innenstadt', 'Ehrenfeld', 'Lindenthal', 'Sülz', 'Belgisches Viertel'],
+
+  // UK
+  'london': ['Kensington', 'Mayfair', 'Harley Street', 'Covent Garden', 'Chelsea', 'Westminster', 'Soho', 'Camden'],
+  'manchester': ['Northern Quarter', 'Spinningfields', 'Deansgate', 'Ancoats', 'Didsbury'],
+  'birmingham': ['Jewellery Quarter', 'Edgbaston', 'Digbeth', 'Harborne', 'City Centre'],
+  'glasgow': ['West End', 'Merchant City', 'Finnieston', 'Shawlands', 'City Centre'],
+  'edinburgh': ['Old Town', 'New Town', 'Leith', 'Stockbridge', 'Morningside'],
+
+  // USA
+  'new york': ['Manhattan', 'Brooklyn', 'Upper East Side', 'SoHo', 'Tribeca', 'Midtown', 'Williamsburg'],
+  'los angeles': ['Beverly Hills', 'Santa Monica', 'Downtown LA', 'Hollywood', 'Westwood', 'Silver Lake'],
+  'chicago': ['Loop', 'River North', 'Lincoln Park', 'Wicker Park', 'Fulton Market'],
+  'houston': ['Downtown', 'Galleria', 'Midtown', 'Heights', 'Montrose'],
+  'miami': ['Brickell', 'South Beach', 'Wynwood', 'Coral Gables', 'Downtown Miami'],
+  'austin': ['Downtown', 'Barton Springs', 'South Congress', 'The Domain', 'East Austin'],
+
+  // Canada
+  'toronto': ['Downtown', 'Yorkville', 'Kensington Market', 'Liberty Village', 'King West', 'North York'],
+  'montreal': ['Old Montreal', 'Le Plateau', 'Downtown', 'Mile End', 'Griffintown'],
+  'vancouver': ['Gastown', 'Yaletown', 'Kitsilano', 'Downtown Vancouver', 'Coal Harbour'],
+  'calgary': ['Beltline', 'Downtown', 'Kensington', 'Inglewood', 'Bridgeland'],
+
+  // Australia
+  'sydney': ['CBD', 'Surry Hills', 'Bondi', 'Paddington', 'Manly', 'Chatswood'],
+  'melbourne': ['CBD', 'Fitzroy', 'South Yarra', 'St Kilda', 'Carlton', 'Docklands'],
+  'brisbane': ['Fortitude Valley', 'South Bank', 'New Farm', 'CBD', 'West End'],
+  'perth': ['CBD', 'Northbridge', 'Subiaco', 'Fremantle', 'Leederville'],
+
+  // UAE
+  'dubai': ['Downtown Dubai', 'Dubai Marina', 'Business Bay', 'Jumeirah', 'DIFC', 'Deira', 'JLT'],
+  'abu dhabi': ['Corniche', 'Al Reem Island', 'Yas Island', 'Saadiyat Island', 'Al Khalidiya'],
+  'sharjah': ['Al Majaz', 'Al Nahda', 'Al Qasimia', 'Al Taawun'],
+
+  // France
   'paris': ['Champs-Élysées', 'Le Marais', 'Rue de Rivoli', 'Saint-Germain', 'Opéra', 'Montmartre'],
+  'marseille': ['Vieux-Port', 'Le Panier', 'La Plaine', 'Prado'],
+  'lyon': ['Presqu\'île', 'Vieux Lyon', 'Croix-Rousse', 'Part-Dieu'],
+
+  // Italy
   'rome': ['Via del Corso', 'Trastevere', 'Piazza di Spagna', 'Via Veneto', 'Prati'],
-  'madrid': ['Gran Vía', 'Salamanca', 'Chamberí', 'Passeig de Gràcia', 'Malasaña'],
+  'milan': ['Quadrilatero della Moda', 'Brera', 'Navigli', 'Porta Nuova'],
+
+  // Spain
+  'madrid': ['Gran Vía', 'Salamanca', 'Chamberí', 'Malasaña', 'Chueca'],
+  'barcelona': ['Passeig de Gràcia', 'Eixample', 'Gòtic', 'El Born', 'Gràcia'],
+
+  // Netherlands
   'amsterdam': ['Herengracht', 'Keizersgracht', 'Zuidas', 'Jordaan', 'Centrum'],
-  'austin': ['Downtown', 'Barton Springs', 'South Congress', 'The Domain', 'East Austin', 'Zilker'],
-  'new york': ['Manhattan', 'Brooklyn', 'Upper East Side', 'SoHo', 'Tribeca', 'Midtown'],
-  'london': ['Kensington', 'Mayfair', 'Harley Street', 'Covent Garden', 'Chelsea', 'Westminster']
+  'rotterdam': ['Centrum', 'Kralingen', 'Delfshaven', 'Kop van Zuid']
 };
 
 // Authentic Country & Language Specific Niche Rules

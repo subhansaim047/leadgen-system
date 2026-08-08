@@ -4,14 +4,94 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/Button/Button';
 import { triggerScrape } from '@/lib/api';
-import { Play, ShieldCheck, Zap, Loader2, CheckCircle2, Search, Filter, Database } from 'lucide-react';
+import { Play, ShieldCheck, Zap, Loader2, MapPin, Globe } from 'lucide-react';
 import styles from './page.module.css';
+
+export const COUNTRY_CITIES_MAP: Record<string, string[]> = {
+  'Germany': [
+    'Berlin', 'Munich', 'Hamburg', 'Frankfurt', 'Cologne', 'Stuttgart', 
+    'Düsseldorf', 'Dortmund', 'Essen', 'Leipzig', 'Bremen', 'Dresden', 'Hannover', 'Nuremberg'
+  ],
+  'UK': [
+    'London', 'Manchester', 'Birmingham', 'Glasgow', 'Liverpool', 'Edinburgh', 
+    'Leeds', 'Bristol', 'Sheffield', 'Belfast', 'Newcastle', 'Nottingham', 'Cardiff'
+  ],
+  'USA': [
+    'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 
+    'San Antonio', 'San Diego', 'Dallas', 'San Jose', 'Austin', 'Miami', 'Atlanta', 'Seattle'
+  ],
+  'Canada': [
+    'Toronto', 'Montreal', 'Vancouver', 'Calgary', 'Edmonton', 'Ottawa', 
+    'Winnipeg', 'Quebec City', 'Hamilton', 'Kitchener', 'Halifax', 'Victoria'
+  ],
+  'Australia': [
+    'Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Gold Coast', 
+    'Canberra', 'Newcastle', 'Central Coast', 'Sunshine Coast', 'Wollongong'
+  ],
+  'UAE': [
+    'Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujeirah', 'Al Ain'
+  ],
+  'Pakistan': [
+    'Karachi', 'Lahore', 'Faisalabad', 'Rawalpindi', 'Gujranwala', 'Peshawar', 
+    'Multan', 'Islamabad', 'Quetta', 'Sialkot', 'Daska', 'Gujrat', 'Bahawalpur', 'Sargodha'
+  ],
+  'France': [
+    'Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 
+    'Montpellier', 'Strasbourg', 'Bordeaux', 'Lille', 'Rennes', 'Reims'
+  ],
+  'Italy': [
+    'Rome', 'Milan', 'Naples', 'Turin', 'Palermo', 'Genoa', 
+    'Bologna', 'Florence', 'Bari', 'Catania', 'Venice', 'Verona'
+  ],
+  'Spain': [
+    'Madrid', 'Barcelona', 'Valencia', 'Seville', 'Zaragoza', 'Málaga', 
+    'Murcia', 'Palma', 'Las Palmas', 'Bilbao', 'Alicante', 'Córdoba'
+  ],
+  'Netherlands': [
+    'Amsterdam', 'Rotterdam', 'The Hague', 'Utrecht', 'Eindhoven', 
+    'Tilburg', 'Groningen', 'Almere', 'Breda', 'Nijmegen'
+  ],
+  'Switzerland': [
+    'Zurich', 'Geneva', 'Basel', 'Lausanne', 'Bern', 'Winterthur', 'Lucerne', 'St. Gallen'
+  ],
+  'Sweden': [
+    'Stockholm', 'Gothenburg', 'Malmö', 'Uppsala', 'Västerås', 'Örebro', 'Linköping', 'Helsingborg'
+  ],
+  'Norway': [
+    'Oslo', 'Bergen', 'Stavanger', 'Trondheim', 'Drammen', 'Fredrikstad', 'Kristiansand'
+  ],
+  'Denmark': [
+    'Copenhagen', 'Aarhus', 'Odense', 'Aalborg', 'Frederiksberg', 'Esbjerg', 'Randers'
+  ],
+  'Ireland': [
+    'Dublin', 'Cork', 'Limerick', 'Galway', 'Waterford', 'Drogheda', 'Dundalk'
+  ],
+  'Belgium': [
+    'Brussels', 'Antwerp', 'Ghent', 'Charleroi', 'Liège', 'Bruges', 'Namur', 'Leuven'
+  ],
+  'Austria': [
+    'Vienna', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach', 'Wels'
+  ],
+  'Poland': [
+    'Warsaw', 'Kraków', 'Wrocław', 'Łódź', 'Poznań', 'Gdańsk', 'Szczecin', 'Bydgoszcz'
+  ],
+  'Portugal': [
+    'Lisbon', 'Porto', 'Vila Nova de Gaia', 'Amadora', 'Braga', 'Funchal', 'Coimbra'
+  ],
+  'Czech Republic': [
+    'Prague', 'Brno', 'Ostrava', 'Plzeň', 'Liberec', 'Olomouc', 'České Budějovice'
+  ],
+  'Global': [
+    'London', 'New York', 'Tokyo', 'Paris', 'Berlin', 'Dubai', 'Toronto', 'Sydney', 'Singapore'
+  ]
+};
 
 export default function SettingsPage() {
   // Scraper Manual Trigger State
-  const [niche, setNiche] = useState('Beauty Salons');
-  const [city, setCity] = useState('Berlin');
   const [country, setCountry] = useState('Germany');
+  const [city, setCity] = useState('Berlin');
+  const [isCustomCity, setIsCustomCity] = useState(false);
+  const [niche, setNiche] = useState('Beauty Salons');
   const [limit, setLimit] = useState(50);
   const [source, setSource] = useState('google_maps_live');
   const [websiteFilter, setWebsiteFilter] = useState<'none' | 'with_broken_website' | 'with_active_website' | 'all'>('none');
@@ -21,6 +101,14 @@ export default function SettingsPage() {
   const [progress, setProgress] = useState(0);
   const [statusMsg, setStatusMsg] = useState('');
   const [logMessages, setLogMessages] = useState<string[]>([]);
+
+  // When Country changes, update city automatically to 1st city of selected country
+  const handleCountryChange = (newCountry: string) => {
+    setCountry(newCountry);
+    const availableCities = COUNTRY_CITIES_MAP[newCountry] || ['Berlin'];
+    setCity(availableCities[0]);
+    setIsCustomCity(false);
+  };
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -74,6 +162,8 @@ export default function SettingsPage() {
     }
   };
 
+  const currentCountryCities = COUNTRY_CITIES_MAP[country] || ['Berlin'];
+
   return (
     <>
       <Header title="Direct Lead Discovery Engine" />
@@ -85,7 +175,7 @@ export default function SettingsPage() {
             <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Direct Business Intelligence Harvester</h2>
           </div>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '13.5px', lineHeight: '1.5' }}>
-            Configure real-time extraction parameters, website audit requirements, and target regions across public commercial directories.
+            Configure real-time extraction parameters, country/city targets, and prospect requirements across commercial business registries.
           </p>
 
           {scraping && (
@@ -113,38 +203,102 @@ export default function SettingsPage() {
           )}
 
           <form onSubmit={handleManualScrape}>
+            {/* 1. Country Selection */}
             <div className={styles.formGroup}>
-              <label className={styles.label}>Prospect Requirement Mode</label>
-              <select 
-                className={styles.input} 
-                value={websiteFilter} 
-                onChange={(e) => setWebsiteFilter(e.target.value as any)}
-                style={{ 
-                  fontWeight: '600', 
-                  color: websiteFilter === 'none' ? '#10b981' : (websiteFilter === 'with_broken_website' ? '#f43f5e' : (websiteFilter === 'with_active_website' ? '#38bdf8' : '#f59e0b')) 
-                }}
-              >
-                <option value="none">Without Website Only (100% Zero-Website Opportunities)</option>
-                <option value="with_broken_website">With Outdated / Broken Website Only (Redesign Targets)</option>
-                <option value="with_active_website">With Active Website Only (Optimization Leads)</option>
-                <option value="all">All Verified Businesses (Full Market Directory)</option>
+              <label className={styles.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Globe size={14} color="var(--accent-primary)" />
+                Target Country
+              </label>
+              <select className={styles.input} value={country} onChange={(e) => handleCountryChange(e.target.value)}>
+                <option value="Germany">Germany (EU)</option>
+                <option value="UK">United Kingdom (UK)</option>
+                <option value="USA">United States (USA)</option>
+                <option value="Canada">Canada</option>
+                <option value="Australia">Australia</option>
+                <option value="UAE">United Arab Emirates (UAE)</option>
+                <option value="Pakistan">Pakistan</option>
+                <option value="France">France (EU)</option>
+                <option value="Italy">Italy (EU)</option>
+                <option value="Spain">Spain (EU)</option>
+                <option value="Netherlands">Netherlands (EU)</option>
+                <option value="Switzerland">Switzerland (EU)</option>
+                <option value="Sweden">Sweden (EU)</option>
+                <option value="Norway">Norway (EU)</option>
+                <option value="Denmark">Denmark (EU)</option>
+                <option value="Ireland">Ireland (EU)</option>
+                <option value="Belgium">Belgium (EU)</option>
+                <option value="Austria">Austria (EU)</option>
+                <option value="Poland">Poland (EU)</option>
+                <option value="Portugal">Portugal (EU)</option>
+                <option value="Czech Republic">Czech Republic (EU)</option>
+                <option value="Global">Global / Worldwide</option>
               </select>
             </div>
 
+            {/* 2. City Selection (Cascading based on Country) */}
             <div className={styles.formGroup}>
-              <label className={styles.label}>Lead Data Source</label>
-              <select className={styles.input} value={source} onChange={(e) => setSource(e.target.value)}>
-                <option value="google_maps_live">Google Places Business Directory (Verified Search)</option>
-                <option value="linkedin_live">LinkedIn Business Directory (Public Search)</option>
-                <option value="facebook_live">Facebook Local Business Pages</option>
-                <option value="instagram_live">Instagram Business Accounts</option>
-                <option value="yelp_live">Yelp Commercial Directory</option>
-                <option value="bing_places_live">Bing Places for Business</option>
-                <option value="apple_maps_live">Apple Maps Business Directory</option>
-                <option value="chamber_commerce">Chamber of Commerce Registry</option>
-              </select>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label className={styles.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <MapPin size={14} color="var(--accent-secondary)" />
+                  Target City / Region ({country})
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsCustomCity(!isCustomCity)}
+                  style={{ fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  {isCustomCity ? '← Choose from dropdown' : '+ Type custom city'}
+                </button>
+              </div>
+
+              {isCustomCity ? (
+                <input
+                  type="text"
+                  className={styles.input}
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder={`Type any specific town or area in ${country}...`}
+                  required
+                />
+              ) : (
+                <select
+                  className={styles.input}
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                >
+                  {currentCountryCities.map((cityName) => (
+                    <option key={cityName} value={cityName}>
+                      {cityName}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {/* 1-Click Quick Select City Badges for selected country */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
+                {currentCountryCities.map((cityName) => (
+                  <button
+                    key={cityName}
+                    type="button"
+                    onClick={() => { setCity(cityName); setIsCustomCity(false); }}
+                    style={{
+                      padding: '4px 10px',
+                      fontSize: '12px',
+                      borderRadius: '12px',
+                      border: city === cityName ? '1px solid #38bdf8' : '1px solid var(--border-color)',
+                      background: city === cityName ? 'rgba(56, 189, 248, 0.2)' : 'var(--bg-secondary)',
+                      color: city === cityName ? '#38bdf8' : 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    📍 {cityName}
+                  </button>
+                ))}
+              </div>
             </div>
 
+            {/* 3. Niche Selection */}
             <div className={styles.formGroup}>
               <label className={styles.label}>Niche / Business Category / Keywords</label>
               <input type="text" className={styles.input} value={niche} onChange={(e) => setNiche(e.target.value)} placeholder="e.g. Beauty Salons, Dental Clinics, Plumbers" required />
@@ -179,39 +333,41 @@ export default function SettingsPage() {
               </div>
             </div>
 
+            {/* 4. Prospect Mode */}
             <div className={styles.formGroup}>
-              <label className={styles.label}>Target City / Region</label>
-              <input type="text" className={styles.input} value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Berlin, Paris, Rome, Madrid, Amsterdam" required />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Country</label>
-              <select className={styles.input} value={country} onChange={(e) => setCountry(e.target.value)}>
-                <option value="Germany">Germany (EU)</option>
-                <option value="France">France (EU)</option>
-                <option value="Italy">Italy (EU)</option>
-                <option value="Spain">Spain (EU)</option>
-                <option value="Netherlands">Netherlands (EU)</option>
-                <option value="Switzerland">Switzerland (EU)</option>
-                <option value="Sweden">Sweden (EU)</option>
-                <option value="Norway">Norway (EU)</option>
-                <option value="Denmark">Denmark (EU)</option>
-                <option value="Ireland">Ireland (EU)</option>
-                <option value="Belgium">Belgium (EU)</option>
-                <option value="Austria">Austria (EU)</option>
-                <option value="Poland">Poland (EU)</option>
-                <option value="Portugal">Portugal (EU)</option>
-                <option value="Czech Republic">Czech Republic (EU)</option>
-                <option value="UK">United Kingdom</option>
-                <option value="USA">USA</option>
-                <option value="Canada">Canada</option>
-                <option value="Australia">Australia</option>
-                <option value="UAE">UAE</option>
-                <option value="Pakistan">Pakistan</option>
-                <option value="Global">Global / Worldwide</option>
+              <label className={styles.label}>Prospect Requirement Mode</label>
+              <select 
+                className={styles.input} 
+                value={websiteFilter} 
+                onChange={(e) => setWebsiteFilter(e.target.value as any)}
+                style={{ 
+                  fontWeight: '600', 
+                  color: websiteFilter === 'none' ? '#10b981' : (websiteFilter === 'with_broken_website' ? '#f43f5e' : (websiteFilter === 'with_active_website' ? '#38bdf8' : '#f59e0b')) 
+                }}
+              >
+                <option value="none">Without Website Only (100% Zero-Website Opportunities)</option>
+                <option value="with_broken_website">With Outdated / Broken Website Only (Redesign Targets)</option>
+                <option value="with_active_website">With Active Website Only (Optimization Leads)</option>
+                <option value="all">All Verified Businesses (Full Market Directory)</option>
               </select>
             </div>
 
+            {/* 5. Lead Data Source */}
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Lead Data Source</label>
+              <select className={styles.input} value={source} onChange={(e) => setSource(e.target.value)}>
+                <option value="google_maps_live">Google Places Business Directory (Verified Search)</option>
+                <option value="linkedin_live">LinkedIn Business Directory (Public Search)</option>
+                <option value="facebook_live">Facebook Local Business Pages</option>
+                <option value="instagram_live">Instagram Business Accounts</option>
+                <option value="yelp_live">Yelp Commercial Directory</option>
+                <option value="bing_places_live">Bing Places for Business</option>
+                <option value="apple_maps_live">Apple Maps Business Directory</option>
+                <option value="chamber_commerce">Chamber of Commerce Registry</option>
+              </select>
+            </div>
+
+            {/* 6. Lead Limit */}
             <div className={styles.formGroup}>
               <label className={styles.label}>Requested Lead Count Limit</label>
               <input type="number" className={styles.input} value={limit} onChange={(e) => setLimit(Number(e.target.value))} min={10} max={100} />
@@ -234,7 +390,7 @@ export default function SettingsPage() {
             <input type="text" className={styles.input} value="Deep Multi-Stage Socket Harvester (8-15 Second Live Extraction)" readOnly />
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            Executes live network requests, zero-website audits, phone extraction, and AI pitch generation across European and Global search sockets.
+            Executes live network requests, zero-website audits, phone extraction, and outreach pitch generation across European, North American, Asian, and Global search sockets.
           </p>
         </div>
       </div>
