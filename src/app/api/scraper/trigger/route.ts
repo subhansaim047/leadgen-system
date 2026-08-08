@@ -1,7 +1,7 @@
 export const maxDuration = 60;
 
 import { NextResponse } from 'next/server';
-import { LEADS_STORE, buildCustomTemplate, isLeadAlreadyExportedOrInCrm, savePersistedLeads } from '../../leads/data';
+import { LEADS_STORE, buildCustomTemplate, isLeadAlreadyExportedOrInCrm, savePersistedLeads, getPersistedLeads } from '../../leads/data';
 
 interface ScrapeBody {
   niche: string;
