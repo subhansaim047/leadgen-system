@@ -1,15 +1,16 @@
 .header {
-  height: 64px;
+  min-height: 64px;
   background: var(--bg-glass);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 12px 24px;
   position: sticky;
   top: 0;
   z-index: 40;
+  gap: 12px;
 }
 
 .titleGroup {
@@ -18,14 +19,53 @@
   gap: 12px;
 }
 
+.menuToggleBtn {
+  display: none;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  align-items: center;
+  justify-content: center;
+}
+
+.mobileBrand {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
 .pageTitle {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: -0.3px;
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 12px 16px;
+  }
+
+  .menuToggleBtn {
+    display: flex;
+  }
+
+  .pageTitle {
+    font-size: 15px;
+  }
+
+  .btnLabel {
+    display: none;
+  }
 }

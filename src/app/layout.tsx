@@ -1,6 +1,7 @@
 import React from 'react';
 import '@/styles/globals.css';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { MobileNavProvider } from '@/components/layout/MobileNavContext';
 import styles from './layout.module.css';
 
 export const metadata = {
@@ -12,12 +13,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <div className={styles.container}>
-          <Sidebar />
-          <div className={styles.mainContent}>
-            <main className={styles.pageBody}>{children}</main>
+        <MobileNavProvider>
+          <div className={styles.container}>
+            <Sidebar />
+            <div className={styles.mainContent}>
+              <main className={styles.pageBody}>{children}</main>
+            </div>
           </div>
-        </div>
+        </MobileNavProvider>
       </body>
     </html>
   );

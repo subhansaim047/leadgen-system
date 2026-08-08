@@ -4,14 +4,26 @@
 }
 
 .mainContent {
-  margin-left: 260px;
+  margin-left: 250px;
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  width: calc(100% - 250px);
 }
 
 .pageBody {
   padding: 24px;
   flex: 1;
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .pageBody {
+    padding: 16px 12px 80px 12px;
+  }
 }
