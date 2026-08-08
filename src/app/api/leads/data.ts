@@ -245,6 +245,12 @@ export function isLeadAlreadyExportedOrInCrm(businessName: string, city: string)
 export function clearAllLeads() {
   LEADS_STORE.length = 0;
   savePersistedLeads([]);
+  DOWNLOADED_LEADS_HISTORY.clear();
+  try {
+    if (fs.existsSync(TMP_EXPORT_HISTORY_PATH)) {
+      fs.unlinkSync(TMP_EXPORT_HISTORY_PATH);
+    }
+  } catch (e) {}
 }
 
 export function deleteLeadById(id: string) {
