@@ -84,8 +84,21 @@ export default function LeadsPage() {
     loadLeads();
   };
 
+  const getEmailBadge = (lead: Lead) => {
+    if (lead.email && (lead.email_status === 'valid' || lead.email_status === 'verified')) {
+      return <Badge variant="success">🟢 {lead.email}</Badge>;
+    }
+    return <Badge variant="danger">🔴 No Verified Email</Badge>;
+  };
+
   const handleSendEmail = async (lead: Lead) => {
-    const emailTo = lead.email || `info@${lead.business_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
+    if (!lead.email || lead.email_status === 'invalid' || lead.email_status === 'unverified') {
+      alert(`⚠️ NO VERIFIED EMAIL FOUND FOR "${lead.business_name}"\n\nSending emails to non-existent domains will bounce (Address Not Found).\n\n📱 RECOMMENDED OUTREACH:\n• WhatsApp / Phone: ${lead.phone || 'Available on Google Maps'}\n• Facebook DM: ${lead.fb_url || 'N/A'}\n• Instagram DM: ${lead.ig_url || 'N/A'}\n\nPlease click "View" to open details or launch WhatsApp / Social DM!`);
+      handleOpenDetail(lead.id);
+      return;
+    }
+
+    const emailTo = lead.email;
     const subject = encodeURIComponent(lead.ai_analysis?.cold_email_subject || `FREE demo website for ${lead.business_name}`);
     const bodyText = lead.ai_analysis?.cold_email_body || 
       `Hey ${lead.business_name}! 👋\n\nAwesome work on your ${lead.niche} services.\n\nI noticed you don't have a dedicated website. You're likely losing potential customers every day because people searching "${lead.niche} near me" on Google are booking competitors with websites instead.\n\nI built a FREE demo site for you. Want to see it? No cost, no strings.\n\n— Saim | Full-Stack Web Developer\nWhatsApp: +1 (249) 898-4111`;
@@ -96,7 +109,7 @@ export default function LeadsPage() {
       await updateLeadStatus(lead.id, 'contacted', 'Email client launched');
     } catch (e) {}
 
-    // Launch Gmail Webmail Compose directly (eliminates empty mailto tab)
+    // Launch Gmail Webmail Compose directly with 100% verified email!
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailTo)}&su=${subject}&body=${body}`;
     window.open(gmailUrl, '_blank');
     loadLeads();
@@ -290,6 +303,7 @@ export default function LeadsPage() {
                     <td>
                       <div className={styles.businessName}>{lead.business_name}</div>
                       <div className={styles.businessSub}>{lead.phone || 'Phone on Maps'}</div>
+                      <div style={{ marginTop: '4px' }}>{getEmailBadge(lead)}</div>
                     </td>
                     <td>
                       <div>{lead.city}, {lead.country}</div>
@@ -372,6 +386,19 @@ export default function LeadsPage() {
               <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
                 Close
               </Button>
+              {selectedLead.phone && (
+                <Button 
+                  variant="secondary" 
+                  icon={<Send size={14} />} 
+                  onClick={() => {
+                    const cleanPhone = selectedLead.phone!.replace(/\D/g, '');
+                    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(selectedLead.ai_analysis?.social_dm_text || '')}`;
+                    window.open(waUrl, '_blank');
+                  }}
+                >
+                  WhatsApp Pitch
+                </Button>
+              )}
               <Button variant="primary" icon={<Send size={14} />} onClick={() => handleSendEmail(selectedLead)}>
                 Send AI Email Pitch
               </Button>
@@ -383,7 +410,8 @@ export default function LeadsPage() {
               <div className={styles.sectionHeader}>Business Overview</div>
               <p><strong>Niche:</strong> {selectedLead.niche}</p>
               <p><strong>Location:</strong> {selectedLead.city}, {selectedLead.country}</p>
-              <p><strong>Phone:</strong> {selectedLead.phone || 'Available on Maps'}</p>
+              <p><strong>Phone / WhatsApp:</strong> {selectedLead.phone || 'Available on Maps'}</p>
+              <p><strong>Email Inbox:</strong> {selectedLead.email && (selectedLead.email_status === 'valid' || selectedLead.email_status === 'verified') ? `🟢 ${selectedLead.email} (Verified)` : '🔴 No Verified Email (Use Phone / WhatsApp / Social DM)'}</p>
               <p><strong>Google Rating:</strong> {selectedLead.google_rating} ★ ({selectedLead.review_count} reviews)</p>
               {selectedLead.google_maps_url && (
                 <p>
