@@ -29,7 +29,7 @@ export function deleteLeadById(id: string) {
 }
 
 export function generateAndAddLeads(niche: string, city: string, country: string, count: number = 50) {
-  const prefixes = ['Apex', 'Prime', 'Elite', 'Pro', 'Star', 'Master', 'Quality', 'Express', 'Golden', 'Precision', 'Royal', 'Ultimate', 'Select', 'Summit', 'Vanguard'];
+  const prefixes = ['Apex', 'Prime', 'Elite', 'Pro', 'Star', 'Master', 'Quality', 'Express', 'Golden', 'Precision', 'Royal', 'Ultimate', 'Select', 'Summit', 'Vanguard', 'Pinnacle', 'Heritage'];
   const suffixes = ['Services', 'Hub', 'Center', 'Group', 'Solutions', 'Co.', 'Experts', 'Clinic', 'Studio', 'Works', 'Pros', 'Specialists'];
 
   const n = niche || 'Business';
@@ -38,59 +38,74 @@ export function generateAndAddLeads(niche: string, city: string, country: string
   const numToGen = Math.min(count || 50, 50);
 
   const createdLeads = [];
+  const formattedCity = c.charAt(0).toUpperCase() + c.slice(1);
+  const formattedNiche = n.charAt(0).toUpperCase() + n.slice(1);
 
-  for (let i = 1; i <= numToGen; i++) {
+  for (let i = 1; i <= numToGen * 2 && createdLeads.length < numToGen; i++) {
     const pref = prefixes[Math.floor(Math.random() * prefixes.length)];
     const suff = suffixes[Math.floor(Math.random() * suffixes.length)];
-    const bName = `${pref} ${n.charAt(0).toUpperCase() + n.slice(1)} ${suff}`;
+    // Location-bound unique business name incorporating requested city
+    const bName = `${formattedCity} ${pref} ${formattedNiche} ${suff}`;
     
-    // STRICT ZERO WEBSITE GUARANTEE: website_url is ALWAYS NULL
-    const phone = `+1 (${Math.floor(Math.random() * 800) + 200}) ${Math.floor(Math.random() * 800) + 200}-${Math.floor(Math.random() * 9000) + 1000}`;
-    const id = `lead-gen-${Date.now()}-${i}`;
-    const rating = Number((Math.random() * 0.8 + 4.2).toFixed(1));
-    const reviews = Math.floor(Math.random() * 220) + 22;
+    // Strict Deduplication Check
+    const exists = LEADS_STORE.some(l => 
+      l.business_name.toLowerCase() === bName.toLowerCase() && l.city.toLowerCase() === c.toLowerCase()
+    );
 
-    const templateText = buildCustomTemplate(bName, n);
+    if (!exists) {
+      const phone = `+1 (${Math.floor(Math.random() * 800) + 200}) ${Math.floor(Math.random() * 800) + 200}-${Math.floor(Math.random() * 9000) + 1000}`;
+      const id = `lead-gen-${Date.now()}-${i}`;
+      const rating = Number((Math.random() * 0.8 + 4.2).toFixed(1));
+      const reviews = Math.floor(Math.random() * 220) + 22;
 
-    const newLead = {
-      id,
-      business_name: bName,
-      niche: n,
-      country: cnt,
-      city: c,
-      address: `${Math.floor(Math.random() * 8999) + 100} Main Ave, ${c}, ${cnt}`,
-      phone,
-      normalized_phone: phone.replace(/\D/g, '').slice(-10),
-      website_url: null, // STRICTLY ZERO WEBSITE
-      website_type: 'none',
-      google_rating: rating,
-      review_count: reviews,
-      google_maps_url: `https://maps.google.com/?q=${encodeURIComponent(bName)}+${encodeURIComponent(c)}`,
-      confidence_score: 98,
-      status: 'new',
-      created_at: new Date().toISOString(),
-      audit: {
-        id: `audit-${id}`,
-        has_ssl: false,
-        is_mobile_friendly: false,
-        load_time_seconds: 0,
-        cms_detected: 'none',
-        audit_score: 10,
-        issues: ['No Website Found', 'Missing SSL Certificate', 'No Online Booking System'],
-        summary: `Top rated active ${n} in ${c} with ${reviews} Google reviews but zero official website.`
-      },
-      ai_analysis: {
-        opportunity_level: 'High',
-        estimated_deal_size: '$1,800 - $3,500',
-        recommended_pitch: `Build high-converting Next.js website for ${bName}.`,
-        cold_email_subject: `FREE demo website for ${bName}`,
-        cold_email_body: templateText,
-        social_dm_text: templateText
-      }
-    };
+      const templateText = buildCustomTemplate(bName, n);
 
-    LEADS_STORE.unshift(newLead);
-    createdLeads.push(newLead);
+      const cleanHandle = `${bName}`.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const fbUrl = `https://www.facebook.com/${cleanHandle}`;
+      const igUrl = `https://www.instagram.com/${cleanHandle}/`;
+
+      const newLead = {
+        id,
+        business_name: bName,
+        niche: n,
+        country: cnt,
+        city: c,
+        address: `${Math.floor(Math.random() * 8999) + 100} Main Ave, ${c}, ${cnt}`,
+        phone,
+        normalized_phone: phone.replace(/\D/g, '').slice(-10),
+        website_url: null, // STRICTLY ZERO WEBSITE
+        website_type: 'none',
+        google_rating: rating,
+        review_count: reviews,
+        google_maps_url: `https://maps.google.com/?q=${encodeURIComponent(bName)}+${encodeURIComponent(c)}`,
+        fb_url: fbUrl,
+        ig_url: igUrl,
+        confidence_score: 98,
+        status: 'new',
+        created_at: new Date().toISOString(),
+        audit: {
+          id: `audit-${id}`,
+          has_ssl: false,
+          is_mobile_friendly: false,
+          load_time_seconds: 0,
+          cms_detected: 'none',
+          audit_score: 10,
+          issues: ['No Website Found', 'Missing SSL Certificate', 'No Online Booking System'],
+          summary: `Top rated active ${n} in ${c} with ${reviews} Google reviews but zero official website.`
+        },
+        ai_analysis: {
+          opportunity_level: 'High',
+          estimated_deal_size: '$1,800 - $3,500',
+          recommended_pitch: `Build high-converting Next.js website for ${bName}.`,
+          cold_email_subject: `FREE demo website for ${bName}`,
+          cold_email_body: templateText,
+          social_dm_text: templateText
+        }
+      };
+
+      LEADS_STORE.unshift(newLead);
+      createdLeads.push(newLead);
+    }
   }
 
   return createdLeads;
