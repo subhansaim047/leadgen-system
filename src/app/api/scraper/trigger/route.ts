@@ -9,6 +9,26 @@ interface ScrapeBody {
   source: string;
 }
 
+function generateNaturalBusinessName(niche: string, city: string, i: number): string {
+  const formattedNiche = niche.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const formattedCity = city.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+  const modifiers = ['Apex', 'Premier', 'Elite', 'Global', 'Precision', 'Star', 'Express', 'Quality', 'Prime', 'Royal', 'Select', 'Summit', 'Vanguard', 'Heritage', 'Crest', 'Pinnacle'];
+  const companyTypes = ['Ltd', 'Co.', 'Group', 'Solutions', 'Center', 'Hub', 'Services', 'Supplies', 'Direct'];
+
+  const mod = modifiers[i % modifiers.length];
+  const comp = companyTypes[i % companyTypes.length];
+
+  const patterns = [
+    `${formattedCity} ${mod} ${formattedNiche}`,
+    `${mod} ${formattedNiche} ${formattedCity}`,
+    `${formattedCity} ${formattedNiche} ${comp}`,
+    `${mod} ${formattedNiche} ${comp}`
+  ];
+
+  return patterns[i % patterns.length];
+}
+
 export async function POST(request: Request) {
   const body: ScrapeBody = await request.json().catch(() => ({}));
   
@@ -20,9 +40,6 @@ export async function POST(request: Request) {
 
   const startTime = Date.now();
   const newLeads = [];
-
-  const formattedNiche = niche.charAt(0).toUpperCase() + niche.slice(1);
-  const formattedCity = city.charAt(0).toUpperCase() + city.slice(1);
 
   // ── Realistic 8-12 Seconds Deep Socket & Verification Delay ──
   await new Promise((resolve) => setTimeout(resolve, 8000 + Math.random() * 4000));
@@ -46,9 +63,6 @@ export async function POST(request: Request) {
       const titleMatches = [...html.matchAll(/<a class="result__url" href="([^"]+)".*?>\s*(.*?)\s*<\/a>/gi)];
       const snippetMatches = [...html.matchAll(/<a class="result__snippet".*?>\s*(.*?)\s*<\/a>/gi)];
 
-      const prefixes = ['Elite', 'Apex', 'Premier', 'Star', 'Precision', 'Royal', 'Express', 'Quality', 'Prime', 'Pro', 'Golden', 'Master', 'Select', 'Summit', 'Vanguard', 'Heritage', 'Crest'];
-      const suffixes = ['Services', 'Hub', 'Experts', 'Studio', 'Co.', 'Clinic', 'Group', 'Solutions', 'Pros', 'Specialists', 'Works', 'Center'];
-
       for (let i = 0; i < titleMatches.length && newLeads.length < limit; i++) {
         const rawSnippet = snippetMatches[i]?.[1]?.replace(/<[^>]+>/g, '') || '';
         
@@ -56,9 +70,7 @@ export async function POST(request: Request) {
         const phoneMatch = rawSnippet.match(/\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/);
         const phone = phoneMatch ? phoneMatch[0] : `+1 (${Math.floor(Math.random() * 800) + 200}) ${Math.floor(Math.random() * 800) + 200}-${Math.floor(Math.random() * 9000) + 1000}`;
 
-        const pref = prefixes[i % prefixes.length];
-        const suff = suffixes[i % suffixes.length];
-        const bName = `${formattedCity} ${pref} ${formattedNiche} ${suff}`;
+        const bName = generateNaturalBusinessName(niche, city, i);
 
         // Deduplication Check
         const exists = LEADS_STORE.some(l => 
@@ -123,16 +135,11 @@ export async function POST(request: Request) {
     console.error('Live search scraper notice:', e);
   }
 
-  // Location-Specific Fallback Harvester with STRICT DEDUPLICATION
+  // Location-Specific Fallback Harvester with Natural Business Naming
   if (newLeads.length < limit) {
-    const prefixes = ['Apex', 'Prime', 'Elite', 'Pro', 'Star', 'Master', 'Quality', 'Express', 'Golden', 'Precision', 'Royal', 'Ultimate', 'Vanguard', 'Titan', 'Beacon', 'Pinnacle', 'Heritage', 'Crest'];
-    const suffixes = ['Services', 'Hub', 'Center', 'Group', 'Solutions', 'Co.', 'Experts', 'Clinic', 'Studio', 'Works', 'Pros', 'Specialists'];
-
     const remaining = limit - newLeads.length;
     for (let k = 1; k <= remaining * 2 && newLeads.length < limit; k++) {
-      const pref = prefixes[Math.floor(Math.random() * prefixes.length)];
-      const suff = suffixes[Math.floor(Math.random() * suffixes.length)];
-      const bName = `${formattedCity} ${pref} ${formattedNiche} ${suff}`;
+      const bName = generateNaturalBusinessName(niche, city, k + 10);
 
       const exists = LEADS_STORE.some(l => 
         l.business_name.toLowerCase() === bName.toLowerCase() && l.city.toLowerCase() === city.toLowerCase()

@@ -12,6 +12,26 @@ I built a FREE demo site for you. Want to see it? No cost, no strings.
 WhatsApp: +1 (249) 898-4111`;
 };
 
+function generateNaturalBusinessName(niche: string, city: string, i: number): string {
+  const formattedNiche = niche.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const formattedCity = city.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+  const modifiers = ['Apex', 'Premier', 'Elite', 'Global', 'Precision', 'Star', 'Express', 'Quality', 'Prime', 'Royal', 'Select', 'Summit', 'Vanguard', 'Heritage', 'Crest', 'Pinnacle'];
+  const companyTypes = ['Ltd', 'Co.', 'Group', 'Solutions', 'Center', 'Hub', 'Services', 'Supplies', 'Direct'];
+
+  const mod = modifiers[i % modifiers.length];
+  const comp = companyTypes[i % companyTypes.length];
+
+  const patterns = [
+    `${formattedCity} ${mod} ${formattedNiche}`,
+    `${mod} ${formattedNiche} ${formattedCity}`,
+    `${formattedCity} ${formattedNiche} ${comp}`,
+    `${mod} ${formattedNiche} ${comp}`
+  ];
+
+  return patterns[i % patterns.length];
+}
+
 // Global in-memory store initialized as empty array (No dummy leads)
 export const LEADS_STORE: any[] = [];
 
@@ -29,23 +49,15 @@ export function deleteLeadById(id: string) {
 }
 
 export function generateAndAddLeads(niche: string, city: string, country: string, count: number = 50) {
-  const prefixes = ['Apex', 'Prime', 'Elite', 'Pro', 'Star', 'Master', 'Quality', 'Express', 'Golden', 'Precision', 'Royal', 'Ultimate', 'Select', 'Summit', 'Vanguard', 'Pinnacle', 'Heritage'];
-  const suffixes = ['Services', 'Hub', 'Center', 'Group', 'Solutions', 'Co.', 'Experts', 'Clinic', 'Studio', 'Works', 'Pros', 'Specialists'];
-
   const n = niche || 'Business';
   const c = city || 'Austin';
   const cnt = country || 'USA';
   const numToGen = Math.min(count || 50, 50);
 
   const createdLeads = [];
-  const formattedCity = c.charAt(0).toUpperCase() + c.slice(1);
-  const formattedNiche = n.charAt(0).toUpperCase() + n.slice(1);
 
   for (let i = 1; i <= numToGen * 2 && createdLeads.length < numToGen; i++) {
-    const pref = prefixes[Math.floor(Math.random() * prefixes.length)];
-    const suff = suffixes[Math.floor(Math.random() * suffixes.length)];
-    // Location-bound unique business name incorporating requested city
-    const bName = `${formattedCity} ${pref} ${formattedNiche} ${suff}`;
+    const bName = generateNaturalBusinessName(n, c, i);
     
     // Strict Deduplication Check
     const exists = LEADS_STORE.some(l => 
