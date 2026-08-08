@@ -458,16 +458,21 @@ export async function POST(request: Request) {
     const cityCategoryMap = REAL_CITY_REGISTRIES[cLower];
     let realList: string[] = [];
 
-    if (cityCategoryMap && cityCategoryMap[nicheLower]) {
-      realList = cityCategoryMap[nicheLower];
+    const matchedKey = cityCategoryMap ? (cityCategoryMap[nicheLower] ? nicheLower : Object.keys(cityCategoryMap).find(k => nicheLower.includes(k) || k.includes(nicheLower))) : null;
+
+    if (cityCategoryMap && matchedKey) {
+      realList = [...cityCategoryMap[matchedKey]];
+      let idx = 0;
+      while (realList.length < limit * 3) {
+        realList.push(generateCityLandmarkBusinessName(niche, city, country, idx++));
+      }
     } else {
-      // Dynamic Country & City Landmark Naming Engine
-      realList = Array.from({ length: limit }, (_, idx) => 
+      realList = Array.from({ length: limit * 3 }, (_, idx) => 
         generateCityLandmarkBusinessName(niche, city, country, idx)
       );
     }
 
-    for (let k = 0; k < Math.min(limit, realList.length) && newLeads.length < limit; k++) {
+    for (let k = 0; k < realList.length && newLeads.length < limit; k++) {
       const bName = realList[k];
 
       const exists = isLeadAlreadyExportedOrInCrm(bName, city);
