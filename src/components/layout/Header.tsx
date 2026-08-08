@@ -25,7 +25,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onRefresh, onExport }) =>
         )}
         {onExport && (
           <Button variant="primary" size="sm" icon={<Download size={14} />} onClick={onExport}>
-            Export Excel Sheet (.xls)
+            Export Excel Sheet (.csv)
           </Button>
         )}
       </div>

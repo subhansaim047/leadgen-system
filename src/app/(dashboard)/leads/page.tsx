@@ -168,12 +168,44 @@ export default function LeadsPage() {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      let leadsToExport = leads;
+      if (leadsToExport.length === 0 && typeof window !== 'undefined') {
+        leadsToExport = JSON.parse(localStorage.getItem('LEADGEN_CLIENT_STORE') || '[]');
+      }
+
+      if (leadsToExport.length === 0) {
+        alert('No leads available to export! Please run a scrape job first.');
+        return;
+      }
+
+      const res = await fetch('/api/export/csv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leads: leadsToExport })
+      });
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'LeadGen_Verified_Leads.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e: any) {
+      alert('Error exporting CSV: ' + e.message);
+    }
+  };
+
   return (
     <>
       <Header
         title="Lead CRM Workspace"
         onRefresh={loadLeads}
-        onExport={() => window.open('/api/export/csv', '_blank')}
+        onExport={handleExport}
       />
 
       <div className={styles.filterBar} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
