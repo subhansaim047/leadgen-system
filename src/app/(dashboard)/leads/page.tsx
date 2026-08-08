@@ -99,7 +99,7 @@ export default function LeadsPage() {
     }
 
     const emailTo = lead.email;
-    const subject = encodeURIComponent(lead.ai_analysis?.cold_email_subject || `FREE demo website for ${lead.business_name}`);
+    const subject = encodeURIComponent(lead.ai_analysis?.cold_email_subject || `You're Losing Potential Clients 😨`);
     const bodyText = lead.ai_analysis?.cold_email_body || 
       `Hey ${lead.business_name}! 👋\n\nAwesome work on your ${lead.niche} services.\n\nI noticed you don't have a dedicated website. You're likely losing potential customers every day because people searching "${lead.niche} near me" on Google are booking competitors with websites instead.\n\nI built a FREE demo site for you. Want to see it? No cost, no strings.\n\n— Saim | Full-Stack Web Developer\nWhatsApp: +1 (249) 898-4111`;
     

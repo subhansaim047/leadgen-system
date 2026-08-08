@@ -434,7 +434,7 @@ export async function POST(request: Request) {
                 opportunity_level: 'High',
                 estimated_deal_size: '$1,500 - $3,000',
                 recommended_pitch: `Build modern high-converting Next.js website for ${bName}.`,
-                cold_email_subject: `FREE demo website for ${bName}`,
+                cold_email_subject: `You're Losing Potential Clients 😨`,
                 cold_email_body: customMsg,
                 social_dm_text: customMsg
               }
@@ -530,7 +530,7 @@ export async function POST(request: Request) {
             opportunity_level: 'High',
             estimated_deal_size: '$1,500 - $3,000',
             recommended_pitch: `Build high-converting Next.js website for ${bName}.`,
-            cold_email_subject: `FREE demo website for ${bName}`,
+            cold_email_subject: `You're Losing Potential Clients 😨`,
             cold_email_body: customMsg,
             social_dm_text: customMsg
           }
