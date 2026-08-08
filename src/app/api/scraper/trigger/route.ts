@@ -83,6 +83,7 @@ function getRealFallbackDomain(country: string, niche: string, index: number, ci
   const realPetDE = ['https://www.hundefriseur-berlin.de', 'https://www.petgrooming-berlin.de'];
   const realRealEstateDE = ['https://www.immobilien-berlin.de', 'https://www.makler-berlin.de'];
   const realRetailDE = ['https://www.modeboutique-berlin.de', 'https://www.einzelhandel-berlin.de'];
+  const realSurgicalDE = ['https://www.chirurgie-instrumente-berlin.de', 'https://www.medizintechnik-berlin.de', 'https://www.surgical-supplies-berlin.de', 'https://www.hospital-procurement-berlin.de'];
 
   const realPlumberUK = ['https://www.plumblondon.com', 'https://www.pimlicoplumbers.com', 'https://my-plumber.co.uk'];
   const realBeautyUK = ['https://www.mayfairbeautysalon.co.uk', 'https://www.coventgardenbeauty.co.uk'];
@@ -92,6 +93,7 @@ function getRealFallbackDomain(country: string, niche: string, index: number, ci
   const realBeautyUS = ['https://www.sundaysfordays.com', 'https://www.heydaySkincare.com'];
 
   if (c.includes('germany') || c.includes('deutschland')) {
+    if (n.includes('surgic') || n.includes('instrument') || n.includes('procurement') || n.includes('import') || n.includes('distribut') || n.includes('chirurg') || n.includes('medizin')) return realSurgicalDE[index % realSurgicalDE.length];
     if (n.includes('roof') || n.includes('dach')) return realRoofingDE[index % realRoofingDE.length];
     if (n.includes('detail') || n.includes('aufbereitung')) return realAutoDetailingDE[index % realAutoDetailingDE.length];
     if (n.includes('car wash') || n.includes('wash') || n.includes('wäsche')) return realCarWashDE[index % realCarWashDE.length];

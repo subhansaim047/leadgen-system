@@ -158,6 +158,8 @@ export default function SettingsPage() {
               <input type="text" className={styles.input} value={niche} onChange={(e) => setNiche(e.target.value)} placeholder="e.g. Beauty Salons, Dental Clinics, Plumbers" required />
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
                 {[
+                  'Surgical Distributor', 'Surgical Instruments Distributor', 'Surgical Instruments Buyer',
+                  'Surgical Hospital Procurement', 'Surgical Procurement Manager', 'Surgical Import Manager',
                   'Auto Detailing', 'Car Wash', 'Roofing Companies', 'HVAC Services',
                   'Plumbing Services', 'Landscaping Companies', 'Cleaning Services', 'Beauty Salons',
                   'Barber Shops', 'Dental Clinics', 'Physiotherapy Clinics', 'Construction Companies',
