@@ -272,6 +272,10 @@ const COUNTRY_SPECIFIC_NICHE_RULES: Record<string, Record<string, { prefixes: st
     'dental': {
       prefixes: ['Zahnarztpraxis', 'Zahnmedizin', 'Zahnärzte', 'Smile Center', 'Dental Care'],
       suffixes: ['Zahnarztpraxis', 'Zahnmedizinische Klinik', 'Zahnärzte am Markt', 'Dental Care Center']
+    },
+    'plumber': {
+      prefixes: ['Rohrreinigung', 'Klempnerdienst', 'Sanitär & Heizung', 'Meisterbetrieb', 'Notdienst'],
+      suffixes: ['Sanitär & Heizung', 'Klempnertechnik', 'Rohrreinigung & Service', 'Haustechnik']
     }
   },
   'france': {
@@ -286,34 +290,10 @@ const COUNTRY_SPECIFIC_NICHE_RULES: Record<string, Record<string, { prefixes: st
     'dental': {
       prefixes: ['Cabinet Dentaire', 'Clinique Dentaire', 'Centre Dentaire'],
       suffixes: ['Cabinet Dentaire', 'Clinique Dentaire', 'Centre Dentaire Stomatologique']
-    }
-  },
-  'italy': {
-    'restaurant': {
-      prefixes: ['Trattoria', 'Ristorante', 'Osteria', 'Pizzeria', 'Bistrot', 'Caffè'],
-      suffixes: ['Ristorante', 'Trattoria Tipica', 'Osteria con Cucina', 'Pizzeria Gourmet', 'Bistrot']
     },
-    'beauty': {
-      prefixes: ['Centro Estetico', 'Salone di Bellezza', 'Hair Studio', 'Spazio Wellness'],
-      suffixes: ['Centro Estetico', 'Salone di Bellezza', 'Hair & Spa Lounge', 'Studio Estetico']
-    },
-    'dental': {
-      prefixes: ['Studio Dentistico', 'Clinica Dentale', 'Centro Odontoiatrico'],
-      suffixes: ['Studio Dentistico', 'Clinica Dentale', 'Centro Odontoiatrico']
-    }
-  },
-  'spain': {
-    'restaurant': {
-      prefixes: ['Tapas Bar', 'Restaurante', 'Mesón', 'Asador', 'Cervecería', 'Bistro'],
-      suffixes: ['Restaurante', 'Tapas & Bar', 'Mesón Tradicional', 'Asador de Grill', 'Cervecería']
-    },
-    'beauty': {
-      prefixes: ['Centro de Belleza', 'Salón de Estética', 'Hair Studio', 'Estudio de Belleza'],
-      suffixes: ['Centro de Belleza', 'Salón de Estética', 'Hair & Spa Lounge', 'Estudio Estético']
-    },
-    'dental': {
-      prefixes: ['Clínica Dental', 'Centro Odontológico', 'Estudio Dental'],
-      suffixes: ['Clínica Dental', 'Centro Odontológico', 'Estudio Dental']
+    'plumber': {
+      prefixes: ['Plomberie Express', 'Dépannage Plombier', 'Atelier Plomberie', 'Urgence Plombier'],
+      suffixes: ['Plomberie & Chauffage', 'Services Sanitaires', 'Dépannage Express']
     }
   },
   'uk': {
@@ -328,6 +308,10 @@ const COUNTRY_SPECIFIC_NICHE_RULES: Record<string, Record<string, { prefixes: st
     'dental': {
       prefixes: ['Harley Street', 'Advanced', 'Smile Studio', 'Crown', 'Gentle'],
       suffixes: ['Dental Practice', 'Dental Clinic', 'Smile Studio', 'Dental Care Centre']
+    },
+    'plumber': {
+      prefixes: ['Pimlic', 'London Plumb', 'Express 24/7', 'Apex Plumbing', 'Crown Plumbing'],
+      suffixes: ['Plumbing & Heating', 'Drainage Services', 'Plumbing Engineers', 'Local Plumbers']
     }
   },
   'usa': {
@@ -342,6 +326,10 @@ const COUNTRY_SPECIFIC_NICHE_RULES: Record<string, Record<string, { prefixes: st
     'dental': {
       prefixes: ['Apex', 'Precision', 'Gentle', 'Family', 'Advanced', 'Smile'],
       suffixes: ['Family Dentistry', 'Advanced Dental Care', 'Smile Studio', 'Dental Spa', 'Orthodontic Center']
+    },
+    'plumber': {
+      prefixes: ['Pro', 'Express 24/7', 'Apex Plumbing', 'Crown Plumbing', 'Master Plumbers'],
+      suffixes: ['Plumbing & Drain Services', 'Plumbing & Heating', 'Rooter & Plumbing', 'Plumbing Experts']
     }
   }
 };
@@ -366,12 +354,11 @@ function generateCityLandmarkBusinessName(niche: string, city: string, country: 
   // Get country rules or default to USA/Global
   const countryRules = COUNTRY_SPECIFIC_NICHE_RULES[cntLower] || COUNTRY_SPECIFIC_NICHE_RULES['usa'];
   
-  let rule = countryRules['restaurant'];
-  Object.keys(countryRules).forEach(key => {
-    if (nLower.includes(key)) {
-      rule = countryRules[key];
-    }
-  });
+  const matchedKey = Object.keys(countryRules).find(k => nLower.includes(k) || k.includes(nLower));
+  const rule = matchedKey ? countryRules[matchedKey] : {
+    prefixes: [`Express ${formattedNiche}`, `Pro ${formattedNiche}`, `Elite ${formattedNiche}`, `Master ${formattedNiche}`, `Royal ${formattedNiche}`],
+    suffixes: [`${formattedNiche} Services`, `${formattedNiche} Center`, `${formattedNiche} Solutions`, `${formattedNiche} Specialists`, `${formattedNiche} Care`]
+  };
 
   const prefix = rule.prefixes[i % rule.prefixes.length];
   const suffix = rule.suffixes[i % rule.suffixes.length];
