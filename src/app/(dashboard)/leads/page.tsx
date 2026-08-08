@@ -309,7 +309,21 @@ export default function LeadsPage() {
                       <div>{lead.city}, {lead.country}</div>
                       <div className={styles.businessSub}>{lead.niche}</div>
                     </td>
-                    <td>{getWebsiteBadge(lead.website_type)}</td>
+                    <td>
+                      {getWebsiteBadge(lead.website_type)}
+                      {lead.website_url && (
+                        <div style={{ marginTop: '4px', fontSize: '11px' }}>
+                          <a 
+                            href={lead.website_url} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            style={{ color: 'var(--accent-primary)', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                          >
+                            {lead.website_url.replace(/^https?:\/\/(www\.)?/, '')} <ExternalLink size={10} />
+                          </a>
+                        </div>
+                      )}
+                    </td>
                     <td>
                       <span style={{ fontWeight: '700', color: oppScore > 75 ? 'var(--accent-danger)' : 'var(--text-secondary)' }}>
                         {oppScore}/100
@@ -424,6 +438,11 @@ export default function LeadsPage() {
 
             <div>
               <div className={styles.sectionHeader}>Website Audit</div>
+              <p><strong>Website URL:</strong> {selectedLead.website_url ? (
+                <a href={selectedLead.website_url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-primary)', textDecoration: 'underline', marginLeft: '4px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  {selectedLead.website_url} <ExternalLink size={12} />
+                </a>
+              ) : 'No Official Website (Zero-Website Lead)'}</p>
               <p><strong>Status:</strong> {selectedLead.website_type === 'none' ? 'No Website (High Opportunity)' : selectedLead.website_type}</p>
               <p><strong>SSL:</strong> {selectedLead.audit?.has_ssl ? 'Valid' : 'Missing / Unsecured'}</p>
               <p><strong>Mobile Friendly:</strong> {selectedLead.audit?.is_mobile_friendly ? 'Yes' : 'No (Fails Viewport)'}</p>
