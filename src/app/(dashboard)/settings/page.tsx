@@ -14,7 +14,7 @@ export default function SettingsPage() {
   const [country, setCountry] = useState('Germany');
   const [limit, setLimit] = useState(50);
   const [source, setSource] = useState('google_maps_live');
-  const [websiteFilter, setWebsiteFilter] = useState<'none' | 'with_website' | 'all'>('none');
+  const [websiteFilter, setWebsiteFilter] = useState<'none' | 'with_broken_website' | 'with_active_website' | 'all'>('none');
   const [scraping, setScraping] = useState(false);
 
   // Live Deep Progress State
@@ -65,7 +65,7 @@ export default function SettingsPage() {
       }
       setProgress(100);
       setStatusMsg(`✅ 100% Verified Deep Scraping Complete!`);
-      const webFilterText = websiteFilter === 'none' ? 'zero-website' : (websiteFilter === 'with_website' ? 'with-website' : 'mixed website');
+      const webFilterText = websiteFilter === 'none' ? 'zero-website' : (websiteFilter === 'with_broken_website' ? 'broken/outdated website' : (websiteFilter === 'with_active_website' ? 'active working website' : 'mixed website'));
       setLogMessages(prev => [...prev, `[${res.execution_time_seconds || 10}s] Extracted ${res.total_new || limit} 100% verified ${webFilterText} leads successfully!`]);
       
       setTimeout(() => {
@@ -123,11 +123,15 @@ export default function SettingsPage() {
                 className={styles.input} 
                 value={websiteFilter} 
                 onChange={(e) => setWebsiteFilter(e.target.value as any)}
-                style={{ fontWeight: '600', color: websiteFilter === 'none' ? '#10b981' : (websiteFilter === 'with_website' ? '#3b82f6' : '#f59e0b') }}
+                style={{ 
+                  fontWeight: '600', 
+                  color: websiteFilter === 'none' ? '#10b981' : (websiteFilter === 'with_broken_website' ? '#ef4444' : (websiteFilter === 'with_active_website' ? '#3b82f6' : '#f59e0b')) 
+                }}
               >
                 <option value="none">🚫 Without Website Only (100% Zero-Website Prospects - Default)</option>
-                <option value="with_website">🌐 With Website Only (Outdated / Broken Website Prospects)</option>
-                <option value="all">⚡ All Businesses (Mixed - Both With & Without Website)</option>
+                <option value="with_broken_website">⚠️ With Broken / Outdated Website Only (Redesign Leads)</option>
+                <option value="with_active_website">✅ With Active / Working Website Only (Active Site Leads)</option>
+                <option value="all">⚡ All Businesses (Mixed - All Website Types)</option>
               </select>
             </div>
 

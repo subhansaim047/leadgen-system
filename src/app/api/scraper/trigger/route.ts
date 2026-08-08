@@ -7,7 +7,7 @@ interface ScrapeBody {
   country: string;
   limit: number;
   source: string;
-  website_filter?: 'none' | 'with_website' | 'all';
+  website_filter?: 'none' | 'with_broken_website' | 'with_active_website' | 'all';
 }
 
 function cleanTitleToBusinessName(rawTitle: string, city: string, niche: string): string {
@@ -497,9 +497,61 @@ export async function POST(request: Request) {
         const realEmail = hasWebmail ? `${cleanHandle.slice(0, 18)}@gmail.com` : null;
         const emailStatus = hasWebmail ? 'valid' : 'invalid';
 
-        const isZeroWeb = websiteFilter === 'none' ? true : (websiteFilter === 'with_website' ? false : (k % 2 === 0));
-        const generatedWebUrl = isZeroWeb ? null : `https://www.${cleanHandle.slice(0, 20)}.com`;
-        const generatedWebType = isZeroWeb ? 'none' : ((k % 2 === 0) ? 'outdated' : 'broken');
+        let isZeroWeb = false;
+        let generatedWebUrl: string | null = null;
+        let generatedWebType: 'none' | 'outdated' | 'broken' | 'modern' = 'none';
+
+        if (websiteFilter === 'none') {
+          isZeroWeb = true;
+          generatedWebUrl = null;
+          generatedWebType = 'none';
+        } else if (websiteFilter === 'with_broken_website') {
+          isZeroWeb = false;
+          generatedWebUrl = `https://www.${cleanHandle.slice(0, 20)}.com`;
+          generatedWebType = (k % 2 === 0) ? 'outdated' : 'broken';
+        } else if (websiteFilter === 'with_active_website') {
+          isZeroWeb = false;
+          generatedWebUrl = `https://www.${cleanHandle.slice(0, 20)}.com`;
+          generatedWebType = 'modern';
+        } else {
+          // 'all'
+          const mode = k % 3;
+          if (mode === 0) {
+            isZeroWeb = true;
+            generatedWebUrl = null;
+            generatedWebType = 'none';
+          } else if (mode === 1) {
+            isZeroWeb = false;
+            generatedWebUrl = `https://www.${cleanHandle.slice(0, 20)}.com`;
+            generatedWebType = 'outdated';
+          } else {
+            isZeroWeb = false;
+            generatedWebUrl = `https://www.${cleanHandle.slice(0, 20)}.com`;
+            generatedWebType = 'modern';
+          }
+        }
+
+        let auditScore = 10;
+        let auditSummary = '';
+        let auditIssues: string[] = [];
+        let recommendedPitch = '';
+
+        if (generatedWebType === 'none') {
+          auditScore = 10;
+          auditSummary = `High priority prospect: Active ${niche} in ${city} with ${reviews} Google reviews but zero official website.`;
+          auditIssues = ['No Website Found', 'Missing SSL Certificate', 'No Online Booking System'];
+          recommendedPitch = `Build high-converting Next.js website for ${bName}.`;
+        } else if (generatedWebType === 'modern') {
+          auditScore = 92;
+          auditSummary = `Active ${niche} in ${city} with active working website (${generatedWebUrl}).`;
+          auditIssues = ['Active Modern Website', 'High Digital Presence', 'Good PageSpeed Performance'];
+          recommendedPitch = `Offer SEO & Google Ads Optimization for ${bName}.`;
+        } else {
+          auditScore = 35;
+          auditSummary = `Active ${niche} in ${city} with existing ${generatedWebType} website (${generatedWebUrl}). High redesign opportunity.`;
+          auditIssues = ['Outdated Legacy Website', 'Slow Mobile Load Speed', 'Security Vulnerabilities'];
+          recommendedPitch = `Redesign outdated legacy website into modern Next.js app for ${bName}.`;
+        }
 
         const lead = {
           id,
@@ -519,29 +571,23 @@ export async function POST(request: Request) {
           google_maps_url: `https://maps.google.com/?q=${encodeURIComponent(bName)}+${encodeURIComponent(city)}`,
           fb_url: fbUrl,
           ig_url: igUrl,
-          confidence_score: 98,
+          confidence_score: isZeroWeb ? 98 : (generatedWebType === 'modern' ? 45 : 85),
           status: 'new',
           created_at: new Date().toISOString(),
           audit: {
             id: `audit-${id}`,
-            has_ssl: !isZeroWeb && Math.random() > 0.5,
-            is_mobile_friendly: false,
-            load_time_seconds: isZeroWeb ? 0 : 4.8,
-            cms_detected: isZeroWeb ? 'none' : 'WordPress (Legacy 2014)',
-            audit_score: isZeroWeb ? 10 : 35,
-            issues: isZeroWeb 
-              ? ['No Website Found', 'Missing SSL Certificate', 'No Online Booking System']
-              : ['Outdated Legacy Website', 'Slow Mobile Load Speed', 'Security Vulnerabilities'],
-            summary: isZeroWeb
-              ? `High priority prospect: Active ${niche} in ${city} with ${reviews} Google reviews but zero official website.`
-              : `Active ${niche} in ${city} with existing ${generatedWebType} website (${generatedWebUrl}). High redesign opportunity.`
+            has_ssl: generatedWebType === 'modern' || Math.random() > 0.5,
+            is_mobile_friendly: generatedWebType === 'modern',
+            load_time_seconds: generatedWebType === 'none' ? 0 : (generatedWebType === 'modern' ? 1.2 : 4.8),
+            cms_detected: generatedWebType === 'none' ? 'none' : (generatedWebType === 'modern' ? 'Next.js 14 / React' : 'WordPress (Legacy 2014)'),
+            audit_score: auditScore,
+            issues: auditIssues,
+            summary: auditSummary
           },
           ai_analysis: {
-            opportunity_level: 'High',
+            opportunity_level: isZeroWeb ? 'High' : (generatedWebType === 'modern' ? 'Medium' : 'High'),
             estimated_deal_size: '$1,500 - $3,000',
-            recommended_pitch: isZeroWeb
-              ? `Build high-converting Next.js website for ${bName}.`
-              : `Redesign outdated legacy website into modern Next.js app for ${bName}.`,
+            recommended_pitch: recommendedPitch,
             cold_email_subject: `You're Losing Potential Clients 😨`,
             cold_email_body: customMsg,
             social_dm_text: customMsg

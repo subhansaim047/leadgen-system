@@ -62,7 +62,8 @@ export async function triggerScrape(data: {
   country: string;
   limit?: number;
   source?: string;
-}): Promise<{ job_id: string; total_new?: number }> {
+  website_filter?: 'none' | 'with_broken_website' | 'with_active_website' | 'all';
+}): Promise<{ job_id: string; total_new?: number; leads?: any[]; execution_time_seconds?: number }> {
   const res = await fetch(`${API_BASE}/api/scraper/trigger`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
