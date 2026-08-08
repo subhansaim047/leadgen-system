@@ -16,8 +16,21 @@ export default function OutreachHubPage() {
   const loadSocialLeads = async () => {
     try {
       setLoading(true);
-      const res = await fetchLeads({ per_page: 100 });
-      setLeads(res.data);
+      let serverData: Lead[] = [];
+      try {
+        const res = await fetchLeads({ per_page: 100 });
+        serverData = res.data || [];
+      } catch (err) {
+        console.warn('Server fetch error fallback to localStore:', err);
+      }
+      const localStore: Lead[] = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('LEADGEN_CLIENT_STORE') || '[]') : [];
+      const combined = [...serverData];
+      localStore.forEach(l => {
+        if (!combined.some(c => c.id === l.id)) {
+          combined.push(l);
+        }
+      });
+      setLeads(combined);
     } catch (e) {
       console.error(e);
     } finally {
