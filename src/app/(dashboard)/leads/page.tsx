@@ -31,17 +31,23 @@ export default function LeadsPage() {
   const loadLeads = async () => {
     try {
       setLoading(true);
-      const res = await fetchLeads({
-        page,
-        per_page: 50,
-        search,
-        status: statusFilter,
-        website_type: websiteFilter,
-      });
+      let serverData: Lead[] = [];
+      try {
+        const res = await fetchLeads({
+          page,
+          per_page: 50,
+          search,
+          status: statusFilter,
+          website_type: websiteFilter,
+        });
+        serverData = res.data || [];
+      } catch (err) {
+        console.warn('Server fetch error fallback to localStore:', err);
+      }
       
       const localStore: Lead[] = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('LEADGEN_CLIENT_STORE') || '[]') : [];
       
-      const combined = [...res.data];
+      const combined = [...serverData];
       localStore.forEach(l => {
         if (!combined.some(c => c.id === l.id)) {
           combined.push(l);
@@ -49,6 +55,14 @@ export default function LeadsPage() {
       });
 
       let filtered = [...combined];
+      if (search) {
+        const sLower = search.toLowerCase();
+        filtered = filtered.filter(l => 
+          l.business_name.toLowerCase().includes(sLower) || 
+          l.city.toLowerCase().includes(sLower) || 
+          l.niche.toLowerCase().includes(sLower)
+        );
+      }
       if (websiteFilter) {
         filtered = filtered.filter(l => l.website_type === websiteFilter);
       }
