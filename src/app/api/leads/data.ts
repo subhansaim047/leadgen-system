@@ -18,21 +18,115 @@ const CITY_BOUND_LANDMARKS: Record<string, string[]> = {
   'sialkot': ['Paris Road', 'Cantt Area', 'Kashmir Road', 'Defence Road', 'Commissioner Road', 'Saddar Bazaar', 'Kutchery Road', 'Abbott Road'],
   'lahore': ['Gulberg III', 'DHA Phase 5', 'MM Alam Road', 'Model Town', 'Johar Town', 'Wapda Town', 'Garden Town', 'Mall Road'],
   'karachi': ['Clifton Block 4', 'Defence Phase 6', 'PECHS', 'Tariq Road', 'North Nazimabad', 'Gulshan-e-Iqbal'],
-  'islamabad': ['F-7 Markaz', 'F-6 Markaz', 'Blue Area', 'E-11', 'G-9 Markaz', 'I-8 Markaz']
+  'islamabad': ['F-7 Markaz', 'F-6 Markaz', 'Blue Area', 'E-11', 'G-9 Markaz', 'I-8 Markaz'],
+  'berlin': ['Mitte', 'Kurfürstendamm', 'Friedrichstraße', 'Kreuzberg', 'Prenzlauer Berg', 'Charlottenburg'],
+  'paris': ['Champs-Élysées', 'Le Marais', 'Rue de Rivoli', 'Saint-Germain', 'Opéra', 'Montmartre'],
+  'rome': ['Via del Corso', 'Trastevere', 'Piazza di Spagna', 'Via Veneto', 'Prati'],
+  'madrid': ['Gran Vía', 'Salamanca', 'Chamberí', 'Passeig de Gràcia', 'Malasaña'],
+  'amsterdam': ['Herengracht', 'Keizersgracht', 'Zuidas', 'Jordaan', 'Centrum'],
+  'austin': ['Downtown', 'Barton Springs', 'South Congress', 'The Domain', 'East Austin', 'Zilker'],
+  'new york': ['Manhattan', 'Brooklyn', 'Upper East Side', 'SoHo', 'Tribeca', 'Midtown'],
+  'london': ['Kensington', 'Mayfair', 'Harley Street', 'Covent Garden', 'Chelsea', 'Westminster']
 };
 
-const NICHE_NAMING_RULES: Record<string, { prefixes: string[], suffixes: string[] }> = {
-  'restaurant': {
-    prefixes: ['Al-Rehman', 'Kababish', 'Desi Dera', 'Crown', 'Silver Spoon', 'Chief', 'Al-Haaj', 'Sultan', 'Golden', 'Prime', 'The Local', 'Royal', 'Khyber'],
-    suffixes: ['Family Restaurant', 'Grill & BBQ', 'Tikka House', 'Karahi House', 'Broast & Fast Food', 'Bistro', 'Refreshment Center', 'Biryani House', 'Steakhouse']
+const COUNTRY_SPECIFIC_NICHE_RULES: Record<string, Record<string, { prefixes: string[], suffixes: string[] }>> = {
+  'pakistan': {
+    'restaurant': {
+      prefixes: ['Al-Rehman', 'Kababish', 'Desi Dera', 'Crown', 'Silver Spoon', 'Chief', 'Al-Haaj', 'Sultan', 'Golden', 'Prime', 'Royal', 'Khyber'],
+      suffixes: ['Family Restaurant', 'Grill & BBQ', 'Tikka House', 'Karahi House', 'Broast & Fast Food', 'Bistro', 'Refreshment Center', 'Biryani House', 'Steakhouse']
+    },
+    'beauty': {
+      prefixes: ['Glamour', 'Nayla', 'Standard', 'Style Inn', 'Faiza', 'Rose', 'Sanam', 'Grace', 'Blush & Glow', 'Zari', 'Elegance'],
+      suffixes: ['Beauty Salon & Spa', 'Bridal Studio', 'Beauty Clinic', 'Beauty Parlour', 'Makeup Lounge', 'Skin Care Studio']
+    },
+    'dental': {
+      prefixes: ['Al-Razi', 'Shaheen', 'Kashmir', 'Al-Rehman', 'City', 'Grace', 'Advanced', 'Care', 'Apex', 'Precision'],
+      suffixes: ['Dental Care', 'Dental Clinic', 'Smile Studio', 'Dental Center', 'Orthodontic Clinic', 'Dental Surgery']
+    }
   },
-  'beauty': {
-    prefixes: ['Glamour', 'Nayla', 'Standard', 'Style Inn', 'Faiza', 'Rose', 'Sanam', 'Grace', 'Blush & Glow', 'Zari', 'Elegance', 'Velvet Touch'],
-    suffixes: ['Beauty Salon & Spa', 'Bridal Studio', 'Beauty Clinic', 'Beauty Parlour', 'Makeup Lounge', 'Skin Care Studio']
+  'germany': {
+    'restaurant': {
+      prefixes: ['Gasthaus', 'Bistro', 'Steakhouse', 'Café', 'Brauhaus', 'Ristorante', 'Ratskeller', 'Wirtshaus'],
+      suffixes: ['am Markt', 'Bistro & Grill', 'Brauhaus', 'Steakhouse', 'Ristorante', 'Gasthaus', 'Trattoria']
+    },
+    'beauty': {
+      prefixes: ['Kosmetikstudio', 'Beauty Lounge', 'Haaratelier', 'Wellness Studio', 'Elegance'],
+      suffixes: ['Kosmetikstudio', 'Beauty Lounge & Spa', 'Haaratelier', 'Beauty Clinic', 'Wellness Center']
+    },
+    'dental': {
+      prefixes: ['Zahnarztpraxis', 'Zahnmedizin', 'Zahnärzte', 'Smile Center', 'Dental Care'],
+      suffixes: ['Zahnarztpraxis', 'Zahnmedizinische Klinik', 'Zahnärzte am Markt', 'Dental Care Center']
+    }
   },
-  'dental': {
-    prefixes: ['Al-Razi', 'Shaheen', 'Kashmir', 'Al-Rehman', 'City', 'Grace', 'Advanced', 'Care', 'Apex', 'Precision'],
-    suffixes: ['Dental Care', 'Dental Clinic', 'Smile Studio', 'Dental Center', 'Orthodontic Clinic', 'Dental Surgery']
+  'france': {
+    'restaurant': {
+      prefixes: ['Le Petit', 'Brasserie', 'Bistro', 'Restaurant', 'Chez', 'L\'Atelier', 'Café'],
+      suffixes: ['Brasserie', 'Bistro Gastronomique', 'Ristorante', 'Pizzeria', 'Café & Restaurant', 'Grill House']
+    },
+    'beauty': {
+      prefixes: ['Institut de Beauté', 'Salon de Coiffure', 'Atelier Beauté', 'Spa & Bien-Être'],
+      suffixes: ['Institut de Beauté', 'Salon de Coiffure', 'Spa & Wellness', 'Atelier Esthétique']
+    },
+    'dental': {
+      prefixes: ['Cabinet Dentaire', 'Clinique Dentaire', 'Centre Dentaire'],
+      suffixes: ['Cabinet Dentaire', 'Clinique Dentaire', 'Centre Dentaire Stomatologique']
+    }
+  },
+  'italy': {
+    'restaurant': {
+      prefixes: ['Trattoria', 'Ristorante', 'Osteria', 'Pizzeria', 'Bistrot', 'Caffè'],
+      suffixes: ['Ristorante', 'Trattoria Tipica', 'Osteria con Cucina', 'Pizzeria Gourmet', 'Bistrot']
+    },
+    'beauty': {
+      prefixes: ['Centro Estetico', 'Salone di Bellezza', 'Hair Studio', 'Spazio Wellness'],
+      suffixes: ['Centro Estetico', 'Salone di Bellezza', 'Hair & Spa Lounge', 'Studio Estetico']
+    },
+    'dental': {
+      prefixes: ['Studio Dentistico', 'Clinica Dentale', 'Centro Odontoiatrico'],
+      suffixes: ['Studio Dentistico', 'Clinica Dentale', 'Centro Odontoiatrico']
+    }
+  },
+  'spain': {
+    'restaurant': {
+      prefixes: ['Tapas Bar', 'Restaurante', 'Mesón', 'Asador', 'Cervecería', 'Bistro'],
+      suffixes: ['Restaurante', 'Tapas & Bar', 'Mesón Tradicional', 'Asador de Grill', 'Cervecería']
+    },
+    'beauty': {
+      prefixes: ['Centro de Belleza', 'Salón de Estética', 'Hair Studio', 'Estudio de Belleza'],
+      suffixes: ['Centro de Belleza', 'Salón de Estética', 'Hair & Spa Lounge', 'Estudio Estético']
+    },
+    'dental': {
+      prefixes: ['Clínica Dental', 'Centro Odontológico', 'Estudio Dental'],
+      suffixes: ['Clínica Dental', 'Centro Odontológico', 'Estudio Dental']
+    }
+  },
+  'uk': {
+    'restaurant': {
+      prefixes: ['The Royal', 'The Local', 'Golden', 'Prime', 'The Crown', 'Bella', 'The Village'],
+      suffixes: ['Grill & Bar', 'Steakhouse', 'Tandoori & Grill', 'Bistro', 'Brasserie', 'Gourmet Kitchen']
+    },
+    'beauty': {
+      prefixes: ['The Beauty Lounge', 'Elegance', 'Velvet Touch', 'Aesthetic', 'Glow & Grace'],
+      suffixes: ['Beauty Salon & Spa', 'Hair & Beauty Studio', 'Aesthetic Clinic', 'Skin Care Lounge']
+    },
+    'dental': {
+      prefixes: ['Harley Street', 'Advanced', 'Smile Studio', 'Crown', 'Gentle'],
+      suffixes: ['Dental Practice', 'Dental Clinic', 'Smile Studio', 'Dental Care Centre']
+    }
+  },
+  'usa': {
+    'restaurant': {
+      prefixes: ['Prime', 'The Local', 'Golden', 'Blue Harbor', 'Apex', 'Crown', 'Heritage'],
+      suffixes: ['Steakhouse & Grill', 'Family Diner', 'Bistro & Bar', 'Taco Fiesta', 'Seafood & Grill House', 'Grill & Taproom']
+    },
+    'beauty': {
+      prefixes: ['Glow & Grace', 'Velvet Touch', 'Apex', 'Elegance', 'Urban'],
+      suffixes: ['Beauty Lounge & Spa', 'Hair & Aesthetic Studio', 'Skin Care Clinic', 'Glamour Lounge']
+    },
+    'dental': {
+      prefixes: ['Apex', 'Precision', 'Gentle', 'Family', 'Advanced', 'Smile'],
+      suffixes: ['Family Dentistry', 'Advanced Dental Care', 'Smile Studio', 'Dental Spa', 'Orthodontic Center']
+    }
   }
 };
 
@@ -51,10 +145,12 @@ function generateNaturalBusinessName(niche: string, city: string, i: number): st
   ];
   const lmark = landmarks[i % landmarks.length];
 
-  let rule = NICHE_NAMING_RULES['restaurant'];
-  Object.keys(NICHE_NAMING_RULES).forEach(key => {
+  const countryRules = COUNTRY_SPECIFIC_NICHE_RULES['usa'];
+  
+  let rule = countryRules['restaurant'];
+  Object.keys(countryRules).forEach(key => {
     if (nLower.includes(key)) {
-      rule = NICHE_NAMING_RULES[key];
+      rule = countryRules[key];
     }
   });
 
