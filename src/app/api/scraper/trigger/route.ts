@@ -531,6 +531,7 @@ export async function POST(request: Request) {
     total_found: newLeads.length,
     total_new: newLeads.length,
     execution_time_seconds: durationSeconds,
+    leads: newLeads,
     message: `Deep harvested ${newLeads.length} 100% real verified zero-website leads in ${durationSeconds} seconds!`,
   });
 }

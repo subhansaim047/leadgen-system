@@ -38,8 +38,19 @@ export default function LeadsPage() {
         status: statusFilter,
         website_type: websiteFilter,
       });
-      setLeads(res.data);
-      setTotal(res.total);
+      
+      const localStore: Lead[] = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('LEADGEN_CLIENT_STORE') || '[]') : [];
+      
+      // Merge server + local leads, deduplicating by ID
+      const combined = [...res.data];
+      localStore.forEach(l => {
+        if (!combined.some(c => c.id === l.id)) {
+          combined.push(l);
+        }
+      });
+
+      setLeads(combined);
+      setTotal(combined.length);
     } catch (e) {
       console.error(e);
     } finally {
@@ -92,6 +103,11 @@ export default function LeadsPage() {
   const handleDeleteSingle = async (leadId: string, bName: string) => {
     if (confirm(`Delete "${bName}" from CRM?`)) {
       await deleteLead(leadId);
+      if (typeof window !== 'undefined') {
+        const localStore: Lead[] = JSON.parse(localStorage.getItem('LEADGEN_CLIENT_STORE') || '[]');
+        const filtered = localStore.filter(l => l.id !== leadId);
+        localStorage.setItem('LEADGEN_CLIENT_STORE', JSON.stringify(filtered));
+      }
       loadLeads();
     }
   };
@@ -99,6 +115,9 @@ export default function LeadsPage() {
   const handleClearAll = async () => {
     if (confirm('⚠️ Are you sure you want to CLEAR ALL LEADS from your CRM? This will delete all scraped leads so you can start fresh.')) {
       await deleteAllLeads();
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('LEADGEN_CLIENT_STORE');
+      }
       loadLeads();
     }
   };

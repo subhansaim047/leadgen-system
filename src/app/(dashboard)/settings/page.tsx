@@ -57,6 +57,11 @@ export default function SettingsPage() {
     try {
       setScraping(true);
       const res = await triggerScrape({ niche, city, country, limit, source });
+      if (res.leads && Array.from(res.leads).length > 0) {
+        const existing = JSON.parse(localStorage.getItem('LEADGEN_CLIENT_STORE') || '[]');
+        const updated = [...res.leads, ...existing];
+        localStorage.setItem('LEADGEN_CLIENT_STORE', JSON.stringify(updated));
+      }
       setProgress(100);
       setStatusMsg(`✅ 100% Verified Deep Scraping Complete!`);
       setLogMessages(prev => [...prev, `[${res.execution_time_seconds || 10}s] Extracted ${res.total_new || limit} 100% verified zero-website leads successfully!`]);
