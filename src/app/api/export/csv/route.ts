@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { LEADS_STORE, markLeadsAsExported } from '../../leads/data';
+import { getPersistedLeads, markLeadsAsExported } from '../../leads/data';
 
 export async function GET() {
+  const leadsToExport = getPersistedLeads();
   // Save exported leads to permanent blacklist history so they are NEVER returned again in future scrapes!
-  markLeadsAsExported(LEADS_STORE);
+  markLeadsAsExported(leadsToExport);
 
   const headers = [
     'Business Name',
@@ -32,7 +33,7 @@ export async function GET() {
       .replace(/'/g, '&apos;');
   };
 
-  const rows = LEADS_STORE.map((l) => `
+  const rows = leadsToExport.map((l) => `
     <tr>
       <td>${escapeXml(l.business_name)}</td>
       <td>${escapeXml(l.niche)}</td>

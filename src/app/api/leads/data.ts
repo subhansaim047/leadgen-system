@@ -203,17 +203,38 @@ export function savePersistedLeads(leads: any[]) {
   } catch (e) {}
 }
 
+const TMP_EXPORT_HISTORY_PATH = '/tmp/downloaded_history.json';
+
+export function getExportedHistoryKeys(): Set<string> {
+  try {
+    if (fs.existsSync(TMP_EXPORT_HISTORY_PATH)) {
+      const raw = fs.readFileSync(TMP_EXPORT_HISTORY_PATH, 'utf-8');
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        return new Set(arr);
+      }
+    }
+  } catch (e) {}
+  return DOWNLOADED_LEADS_HISTORY;
+}
+
 export function markLeadsAsExported(leads: any[]) {
+  const currentKeys = getExportedHistoryKeys();
   leads.forEach((l) => {
     const key = `${(l.business_name || '').toLowerCase().trim()}_${(l.city || '').toLowerCase().trim()}`;
+    currentKeys.add(key);
     DOWNLOADED_LEADS_HISTORY.add(key);
   });
+  try {
+    fs.writeFileSync(TMP_EXPORT_HISTORY_PATH, JSON.stringify(Array.from(currentKeys)), 'utf-8');
+  } catch (e) {}
 }
 
 export function isLeadAlreadyExportedOrInCrm(businessName: string, city: string): boolean {
   const key = `${businessName.toLowerCase().trim()}_${city.toLowerCase().trim()}`;
   
-  if (DOWNLOADED_LEADS_HISTORY.has(key)) return true;
+  const exportedKeys = getExportedHistoryKeys();
+  if (exportedKeys.has(key)) return true;
 
   const currentStore = getPersistedLeads();
   return currentStore.some(
