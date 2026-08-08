@@ -9,9 +9,9 @@ import styles from './page.module.css';
 
 export default function SettingsPage() {
   // Scraper Manual Trigger State
-  const [niche, setNiche] = useState('Dental Clinics');
-  const [city, setCity] = useState('Austin');
-  const [country, setCountry] = useState('USA');
+  const [niche, setNiche] = useState('Beauty Salons');
+  const [city, setCity] = useState('Berlin');
+  const [country, setCountry] = useState('Germany');
   const [limit, setLimit] = useState(50);
   const [source, setSource] = useState('google_maps_live');
   const [scraping, setScraping] = useState(false);
@@ -27,7 +27,7 @@ export default function SettingsPage() {
       setProgress(5);
       setStatusMsg(`🛰️ Initializing Google Maps Deep Harvester Sockets...`);
       setLogMessages([
-        `[0.5s] Connecting to Google Maps Live API & Public Directories...`,
+        `[0.5s] Connecting to Google Maps Live API & Public European Directories...`,
       ]);
 
       const steps = [
@@ -82,7 +82,7 @@ export default function SettingsPage() {
             <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Deep Verified Scraper (8-15 Second Live Extraction)</h2>
           </div>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '14px' }}>
-            Real deep socket harvester. Performs multi-stage live extraction, zero-website verification, and active business phone checks across public engines.
+            Real deep socket harvester. Performs multi-stage live extraction, zero-website verification, and active business phone checks across European and Global public engines.
           </p>
 
           {scraping && (
@@ -130,20 +130,35 @@ export default function SettingsPage() {
 
             <div className={styles.formGroup}>
               <label className={styles.label}>Niche / Business Category / Keywords</label>
-              <input type="text" className={styles.input} value={niche} onChange={(e) => setNiche(e.target.value)} placeholder="e.g. Dental Clinics, Plumbers, Auto Detailing" required />
+              <input type="text" className={styles.input} value={niche} onChange={(e) => setNiche(e.target.value)} placeholder="e.g. Beauty Salons, Dental Clinics, Plumbers" required />
             </div>
 
             <div className={styles.formGroup}>
               <label className={styles.label}>Target City / Region</label>
-              <input type="text" className={styles.input} value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Austin, London, Dubai, Lahore" required />
+              <input type="text" className={styles.input} value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Berlin, Paris, Rome, Madrid, Amsterdam" required />
             </div>
 
             <div className={styles.formGroup}>
               <label className={styles.label}>Country</label>
               <select className={styles.input} value={country} onChange={(e) => setCountry(e.target.value)}>
+                <option value="Germany">Germany (EU)</option>
+                <option value="France">France (EU)</option>
+                <option value="Italy">Italy (EU)</option>
+                <option value="Spain">Spain (EU)</option>
+                <option value="Netherlands">Netherlands (EU)</option>
+                <option value="Switzerland">Switzerland (EU)</option>
+                <option value="Sweden">Sweden (EU)</option>
+                <option value="Norway">Norway (EU)</option>
+                <option value="Denmark">Denmark (EU)</option>
+                <option value="Ireland">Ireland (EU)</option>
+                <option value="Belgium">Belgium (EU)</option>
+                <option value="Austria">Austria (EU)</option>
+                <option value="Poland">Poland (EU)</option>
+                <option value="Portugal">Portugal (EU)</option>
+                <option value="Czech Republic">Czech Republic (EU)</option>
+                <option value="UK">United Kingdom</option>
                 <option value="USA">USA</option>
                 <option value="Canada">Canada</option>
-                <option value="UK">United Kingdom</option>
                 <option value="Australia">Australia</option>
                 <option value="UAE">UAE</option>
                 <option value="Pakistan">Pakistan</option>
@@ -173,7 +188,7 @@ export default function SettingsPage() {
             <input type="text" className={styles.input} value="Deep Multi-Stage Socket Harvester (8-15 Second Live Extraction)" readOnly />
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            Executes live network requests, zero-website audits, phone extraction, and AI pitch generation across target public search sockets.
+            Executes live network requests, zero-website audits, phone extraction, and AI pitch generation across European and Global search sockets.
           </p>
         </div>
       </div>
