@@ -26,16 +26,16 @@ export default function SettingsPage() {
     let timer: NodeJS.Timeout;
     if (scraping) {
       setProgress(5);
-      setStatusMsg(`🛰️ Initializing Google Maps Deep Harvester Sockets...`);
+      setStatusMsg(`Connecting to live business directory sockets...`);
       setLogMessages([
-        `[0.5s] Connecting to Google Maps Live API & Public European Directories...`,
+        `[0.5s] Initializing socket connection for ${city}, ${country}...`,
       ]);
 
       const steps = [
-        { p: 25, msg: `🔍 Scanning live local business listings for ${city}, ${country}...`, log: `[2.8s] Extracted raw business directory entries for ${niche}...` },
-        { p: 50, msg: `🚫 Executing 100% Zero-Website Audit filter...`, log: `[5.5s] Filtered out existing website domains. Verifying zero-website active leads...` },
-        { p: 75, msg: `📱 Extracting verified phone numbers & generating AI pitches...`, log: `[8.2s] Verified active reviews & generated custom outreach templates...` },
-        { p: 90, msg: `💾 Saving verified leads into Lead CRM Workspace...`, log: `[10.5s] Deduplicating and writing verified leads into CRM database...` }
+        { p: 25, msg: `Scanning local commercial directory listings...`, log: `[2.8s] Extracted business registry entries for ${niche}...` },
+        { p: 50, msg: `Executing website audit & filter validation...`, log: `[5.5s] Analyzing domain status and filtering prospect requirements...` },
+        { p: 75, msg: `Extracting contact info & calculating opportunity scores...`, log: `[8.2s] Verified active contact data & generated outreach intelligence...` },
+        { p: 90, msg: `Writing leads into Lead CRM Workspace...`, log: `[10.5s] Deduplicating entries and persisting to CRM storage...` }
       ];
 
       steps.forEach((step, idx) => {
@@ -64,15 +64,11 @@ export default function SettingsPage() {
         localStorage.setItem('LEADGEN_CLIENT_STORE', JSON.stringify(updated));
       }
       setProgress(100);
-      setStatusMsg(`✅ 100% Verified Deep Scraping Complete!`);
+      setStatusMsg(`Direct extraction completed successfully.`);
       const webFilterText = websiteFilter === 'none' ? 'zero-website' : (websiteFilter === 'with_broken_website' ? 'broken/outdated website' : (websiteFilter === 'with_active_website' ? 'active working website' : 'mixed website'));
-      setLogMessages(prev => [...prev, `[${res.execution_time_seconds || 10}s] Extracted ${res.total_new || limit} 100% verified ${webFilterText} leads successfully!`]);
-      
-      setTimeout(() => {
-        alert(`✅ Deep Live Scraping Completed!\n\nSuccessfully extracted ${res.total_new || limit} real verified ${webFilterText} leads for "${niche}" in ${city}, ${country} in ${res.execution_time_seconds || 10} seconds.\n\nGo to the 'Lead CRM Workspace' tab to view your leads!`);
-      }, 500);
+      setLogMessages(prev => [...prev, `[${res.execution_time_seconds || 10}s] Extracted ${res.total_new || limit} verified ${webFilterText} leads.`]);
     } catch (err: any) {
-      alert(`Error triggering job: ${err.message}`);
+      alert(`Error triggering extraction: ${err.message}`);
     } finally {
       setScraping(false);
     }
@@ -80,35 +76,35 @@ export default function SettingsPage() {
 
   return (
     <>
-      <Header title="100% Real Live Google Maps Harvester" />
+      <Header title="Direct Lead Discovery Engine" />
       <div className={styles.container}>
         {/* Manual Scraper Trigger */}
         <div className={styles.section}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <Zap size={20} color="var(--accent-primary)" />
-            <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Deep Verified Scraper (8-15 Second Live Extraction)</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+            <Zap size={18} color="var(--accent-primary)" />
+            <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Direct Business Intelligence Harvester</h2>
           </div>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '14px' }}>
-            Real deep socket harvester. Performs multi-stage live extraction, website verification, and active business phone checks across European and Global public engines.
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '13.5px', lineHeight: '1.5' }}>
+            Configure real-time extraction parameters, website audit requirements, and target regions across public commercial directories.
           </p>
 
           {scraping && (
-            <div style={{ margin: '20px 0', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+            <div style={{ margin: '20px 0', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontWeight: '600', color: 'var(--accent-primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <Loader2 size={16} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
+                <span style={{ fontWeight: '600', color: 'var(--accent-primary)', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '13.5px' }}>
+                  <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
                   {statusMsg}
                 </span>
-                <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{progress}%</span>
+                <span style={{ fontWeight: '700', color: 'var(--text-primary)', fontSize: '13px' }}>{progress}%</span>
               </div>
 
               {/* Progress Bar */}
-              <div style={{ height: '8px', background: 'var(--bg-primary)', borderRadius: '4px', overflow: 'hidden', marginBottom: '12px' }}>
-                <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, #3b82f6, #10b981)', transition: 'width 0.4s ease' }} />
+              <div style={{ height: '6px', background: 'var(--bg-primary)', borderRadius: '3px', overflow: 'hidden', marginBottom: '12px' }}>
+                <div style={{ height: '100%', width: `${progress}%`, background: 'var(--gradient-primary)', transition: 'width 0.4s ease' }} />
               </div>
 
               {/* Real-time Terminal Log Stream */}
-              <div style={{ background: '#0d1117', padding: '10px 12px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '12px', color: '#a5d6ff', maxHeight: '120px', overflowY: 'auto' }}>
+              <div style={{ background: '#080c14', padding: '12px 14px', borderRadius: '8px', fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#60a5fa', maxHeight: '120px', overflowY: 'auto', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
                 {logMessages.map((log, index) => (
                   <div key={index} style={{ marginBottom: '4px' }}>{log}</div>
                 ))}
@@ -118,38 +114,34 @@ export default function SettingsPage() {
 
           <form onSubmit={handleManualScrape}>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Website Filter / Prospect Requirement Mode</label>
+              <label className={styles.label}>Prospect Requirement Mode</label>
               <select 
                 className={styles.input} 
                 value={websiteFilter} 
                 onChange={(e) => setWebsiteFilter(e.target.value as any)}
                 style={{ 
                   fontWeight: '600', 
-                  color: websiteFilter === 'none' ? '#10b981' : (websiteFilter === 'with_broken_website' ? '#ef4444' : (websiteFilter === 'with_active_website' ? '#3b82f6' : '#f59e0b')) 
+                  color: websiteFilter === 'none' ? '#10b981' : (websiteFilter === 'with_broken_website' ? '#f43f5e' : (websiteFilter === 'with_active_website' ? '#38bdf8' : '#f59e0b')) 
                 }}
               >
-                <option value="none">🚫 Without Website Only (100% Zero-Website Prospects - Default)</option>
-                <option value="with_broken_website">⚠️ With Broken / Outdated Website Only (Redesign Leads)</option>
-                <option value="with_active_website">✅ With Active / Working Website Only (Active Site Leads)</option>
-                <option value="all">⚡ All Businesses (Mixed - All Website Types)</option>
+                <option value="none">Without Website Only (100% Zero-Website Opportunities)</option>
+                <option value="with_broken_website">With Outdated / Broken Website Only (Redesign Targets)</option>
+                <option value="with_active_website">With Active Website Only (Optimization Leads)</option>
+                <option value="all">All Verified Businesses (Full Market Directory)</option>
               </select>
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>Target Platform / Lead Data Source</label>
+              <label className={styles.label}>Lead Data Source</label>
               <select className={styles.input} value={source} onChange={(e) => setSource(e.target.value)}>
-                <option value="google_maps_live">Google Maps Live Direct (⭐⭐⭐⭐⭐ Real Live Harvester)</option>
-                <option value="linkedin_live">LinkedIn Business Directory (⭐⭐⭐⭐⭐ Public Search)</option>
-                <option value="facebook_live">Facebook Local Business Pages (⭐⭐⭐⭐⭐ Public Search)</option>
-                <option value="instagram_live">Instagram Business Search (⭐⭐⭐⭐☆ Public Profiles)</option>
-                <option value="yelp_live">Yelp Local Directory (⭐⭐⭐⭐☆ Live Search)</option>
-                <option value="bing_places_live">Bing Places for Business (⭐⭐⭐⭐☆ Live Search)</option>
-                <option value="apple_maps_live">Apple Maps Business Directory (⭐⭐⭐⭐☆ Live Search)</option>
-                <option value="reddit_live">Reddit Local Business Leads (⭐⭐⭐⭐☆ Community Search)</option>
-                <option value="chamber_commerce">Chamber of Commerce Directory (⭐⭐⭐⭐☆ Local Registers)</option>
-                <option value="trade_shows">Trade Show Exhibitor Lists (⭐⭐⭐⭐☆ B2B Lists)</option>
-                <option value="email_harvester">Public Website Email & Phone Harvester (⭐⭐⭐⭐☆ Domain Crawl)</option>
-                <option value="crunchbase_live">Crunchbase Startup Directory (⭐⭐⭐⭐☆ Startup Search)</option>
+                <option value="google_maps_live">Google Places Business Directory (Verified Search)</option>
+                <option value="linkedin_live">LinkedIn Business Directory (Public Search)</option>
+                <option value="facebook_live">Facebook Local Business Pages</option>
+                <option value="instagram_live">Instagram Business Accounts</option>
+                <option value="yelp_live">Yelp Commercial Directory</option>
+                <option value="bing_places_live">Bing Places for Business</option>
+                <option value="apple_maps_live">Apple Maps Business Directory</option>
+                <option value="chamber_commerce">Chamber of Commerce Registry</option>
               </select>
             </div>
 

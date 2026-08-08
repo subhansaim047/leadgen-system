@@ -4,8 +4,8 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import styles from './layout.module.css';
 
 export const metadata = {
-  title: 'LeadGen System AI — Lead Generation & Outreach CRM',
-  description: 'AI-powered local business lead discovery and outreach automation platform.',
+  title: 'LeadGen Studio — Enterprise Lead Discovery & Outreach Engine',
+  description: 'Real-time commercial business directory harvester and multi-channel outreach platform.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

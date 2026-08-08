@@ -20,9 +20,9 @@ export const Sidebar: React.FC = () => {
     <aside className={styles.sidebar}>
       <div className={styles.logoArea}>
         <div className={styles.logoIcon}>
-          <Sparkles size={20} />
+          <Sparkles size={18} />
         </div>
-        <span className={styles.logoText}>LeadGen AI</span>
+        <span className={styles.logoText}>LeadGen Studio</span>
       </div>
 
       <nav className={styles.nav}>

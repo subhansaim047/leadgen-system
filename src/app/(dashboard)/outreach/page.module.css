@@ -1,7 +1,8 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 20px;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .cardHeader {
@@ -12,30 +13,35 @@
 }
 
 .title {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: -0.2px;
 }
 
 .subtitle {
   font-size: 12px;
   color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .msgBox {
-  background: var(--bg-tertiary);
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 12px;
+  border-left: 3px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
   font-size: 13px;
-  color: var(--text-primary);
-  line-height: 1.4;
-  margin: 12px 0;
-  max-height: 120px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 14px 0;
+  max-height: 130px;
   overflow-y: auto;
+  font-family: var(--font-sans);
 }
 
 .platformButtons {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }

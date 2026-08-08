@@ -65,9 +65,9 @@ export default function OutreachHubPage() {
 
   return (
     <>
-      <Header title="1-Click Social DM Hub" onRefresh={loadSocialLeads} />
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '14px' }}>
-        Clicking FB or IG copies your personalized outreach pitch to your clipboard and launches a Google Search for <strong>[username_without_spaces] fb</strong> or <strong>[username_without_spaces] insta</strong>.
+      <Header title="Multi-Channel Outreach Hub" onRefresh={loadSocialLeads} />
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '13.5px', lineHeight: '1.5' }}>
+        Launch targeted outreach across Facebook, Instagram, and Email. Clicking platform buttons copies your custom prospect pitch and opens direct search.
       </p>
 
       {loading ? (

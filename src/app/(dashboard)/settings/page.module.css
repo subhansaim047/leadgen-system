@@ -1,51 +1,63 @@
 .container {
-  max-width: 800px;
+  max-width: 860px;
+  animation: fadeIn 0.25s ease-out forwards;
 }
 
 .section {
-  background: var(--bg-secondary);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 24px;
+  border-radius: var(--radius-lg);
+  padding: 28px;
   margin-bottom: 24px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+  transition: border-color 0.2s ease;
+}
+
+.section:hover {
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .sectionTitle {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 16px;
+  letter-spacing: -0.3px;
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
 .label {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-secondary);
+  letter-spacing: -0.1px;
 }
 
 .input {
-  padding: 10px 14px;
-  background: var(--bg-tertiary);
+  padding: 11px 14px;
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 14px;
+  outline: none;
+  transition: all 0.18s ease;
 }
 
 .input:focus {
-  outline: none;
   border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--border-glow);
 }
 
 .triggerBox {
   display: flex;
   gap: 12px;
   align-items: center;
+  margin-top: 10px;
 }
