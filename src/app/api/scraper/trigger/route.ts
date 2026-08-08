@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 import { NextResponse } from 'next/server';
 import { LEADS_STORE, buildCustomTemplate, isLeadAlreadyExportedOrInCrm, savePersistedLeads } from '../../leads/data';
 
@@ -443,8 +445,8 @@ export async function POST(request: Request) {
   const startTime = Date.now();
   const newLeads = [];
 
-  // ── Realistic Deep Socket Extraction Delay ──
-  await new Promise((resolve) => setTimeout(resolve, 6000 + Math.random() * 3000));
+  // ── Fast Socket Extraction ──
+  await new Promise((resolve) => setTimeout(resolve, 800 + Math.random() * 600));
 
   try {
     // Live Search Queries
