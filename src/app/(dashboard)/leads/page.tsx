@@ -180,7 +180,7 @@ export default function LeadsPage() {
         return;
       }
 
-      const res = await fetch('/api/export/csv', {
+      const res = await fetch('/api/export/xlsx', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leads: leadsToExport })
@@ -190,13 +190,13 @@ export default function LeadsPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'LeadGen_Verified_Leads.csv';
+      a.download = 'LeadGen_Verified_Leads.xlsx';
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (e: any) {
-      alert('Error exporting CSV: ' + e.message);
+      alert('Error exporting Excel: ' + e.message);
     }
   };
 
