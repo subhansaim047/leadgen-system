@@ -41,7 +41,6 @@ export default function LeadsPage() {
       
       const localStore: Lead[] = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('LEADGEN_CLIENT_STORE') || '[]') : [];
       
-      // Merge server + local leads, deduplicating by ID
       const combined = [...res.data];
       localStore.forEach(l => {
         if (!combined.some(c => c.id === l.id)) {
@@ -49,8 +48,16 @@ export default function LeadsPage() {
         }
       });
 
-      setLeads(combined);
-      setTotal(combined.length);
+      let filtered = [...combined];
+      if (websiteFilter) {
+        filtered = filtered.filter(l => l.website_type === websiteFilter);
+      }
+      if (statusFilter) {
+        filtered = filtered.filter(l => l.status === statusFilter);
+      }
+
+      setLeads(filtered);
+      setTotal(filtered.length);
     } catch (e) {
       console.error(e);
     } finally {
