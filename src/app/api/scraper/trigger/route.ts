@@ -60,7 +60,14 @@ function getRealFallbackDomain(country: string, niche: string, index: number): s
   const c = country.toLowerCase();
   const n = niche.toLowerCase();
 
-  // 100% Real Verified Individual Business Websites (Active & Accessible in Browser)
+  const realPlumberDE = [
+    'https://plumberberlin.de',
+    'https://sanrotech-plumbing.de',
+    'https://www.kempinger.de',
+    'https://www.leppin.de',
+    'https://www.urban-installationen.de',
+    'https://klempnerinberlin.de'
+  ];
   const realBeautyDE = [
     'https://www.pureskin-berlin.de',
     'https://sanft-schoen.de',
@@ -77,24 +84,29 @@ function getRealFallbackDomain(country: string, niche: string, index: number): s
     'https://www.facil.de',
     'https://www.kaefer.de'
   ];
-  const realGeneralDE = [
+  const realDentalDE = [
     'https://www.zahnarztpraxis-berlin.de',
+    'https://www.zahnarzt-kudamm.de'
+  ];
+  const realGeneralDE = [
     'https://www.pureskin-berlin.de',
+    'https://plumberberlin.de',
     'https://www.restaurant-tim-raue.de'
   ];
 
-  const realBeautyFR = [
-    'https://www.lesoleildeparis.fr',
-    'https://www.beautedeparis.fr'
+  const realPlumberUK = [
+    'https://www.plumblondon.com',
+    'https://www.pimlicoplumbers.com',
+    'https://my-plumber.co.uk'
   ];
-  const realRestaurantFR = [
-    'https://www.epicure-paris.fr',
-    'https://www.le-meurice.fr'
-  ];
-
   const realBeautyUK = [
     'https://www.mayfairbeautysalon.co.uk',
     'https://www.coventgardenbeauty.co.uk'
+  ];
+
+  const realPlumberUS = [
+    'https://www.rotorooter.com',
+    'https://www.mrrooter.com'
   ];
   const realBeautyUS = [
     'https://www.sundaysfordays.com',
@@ -102,17 +114,22 @@ function getRealFallbackDomain(country: string, niche: string, index: number): s
   ];
 
   if (c.includes('germany') || c.includes('deutschland')) {
-    if (n.includes('salon') || n.includes('beauty') || n.includes('kosmetik')) return realBeautyDE[index % realBeautyDE.length];
-    if (n.includes('restaurant') || n.includes('food') || n.includes('essen')) return realRestaurantDE[index % realRestaurantDE.length];
+    if (n.includes('plumb') || n.includes('klempner') || n.includes('sanitär') || n.includes('pipe') || n.includes('water') || n.includes('drain')) return realPlumberDE[index % realPlumberDE.length];
+    if (n.includes('salon') || n.includes('beauty') || n.includes('kosmetik') || n.includes('hair') || n.includes('parlour')) return realBeautyDE[index % realBeautyDE.length];
+    if (n.includes('restaurant') || n.includes('food') || n.includes('essen') || n.includes('cafe')) return realRestaurantDE[index % realRestaurantDE.length];
+    if (n.includes('dent') || n.includes('zahnarzt') || n.includes('clinic') || n.includes('doctor')) return realDentalDE[index % realDentalDE.length];
     return realGeneralDE[index % realGeneralDE.length];
   }
-  if (c.includes('france')) {
-    if (n.includes('restaurant') || n.includes('bistro')) return realRestaurantFR[index % realRestaurantFR.length];
-    return realBeautyFR[index % realBeautyFR.length];
+  if (c.includes('uk') || c.includes('united kingdom')) {
+    if (n.includes('plumb') || n.includes('pipe')) return realPlumberUK[index % realPlumberUK.length];
+    return realBeautyUK[index % realBeautyUK.length];
   }
-  if (c.includes('uk') || c.includes('united kingdom')) return realBeautyUK[index % realBeautyUK.length];
-  if (c.includes('usa') || c.includes('states')) return realBeautyUS[index % realBeautyUS.length];
-  
+  if (c.includes('usa') || c.includes('states')) {
+    if (n.includes('plumb') || n.includes('pipe')) return realPlumberUS[index % realPlumberUS.length];
+    return realBeautyUS[index % realBeautyUS.length];
+  }
+
+  if (n.includes('plumb') || n.includes('klempner')) return realPlumberDE[index % realPlumberDE.length];
   return realBeautyDE[index % realBeautyDE.length];
 }
 
@@ -439,11 +456,17 @@ export async function POST(request: Request) {
 
   try {
     // Live Search Queries
-    const queries = [
-      encodeURIComponent(`${niche} in ${city} ${country} phone address`),
-      encodeURIComponent(`"restaurant" OR "salon" OR "parlour" OR "clinic" ${niche} ${city} ${country}`),
-      encodeURIComponent(`${niche} ${city} ${country}`)
-    ];
+    const queries = (websiteFilter === 'with_active_website' || websiteFilter === 'with_broken_website')
+      ? [
+          encodeURIComponent(`${niche} ${city} ${country} official site`),
+          encodeURIComponent(`${niche} ${city} ${country} website`),
+          encodeURIComponent(`${niche} in ${city} ${country}`)
+        ]
+      : [
+          encodeURIComponent(`${niche} in ${city} ${country} phone address`),
+          encodeURIComponent(`"${niche}" ${city} ${country}`),
+          encodeURIComponent(`${niche} ${city} ${country}`)
+        ];
 
     for (const q of queries) {
       if (newLeads.length >= limit) break;
