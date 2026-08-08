@@ -164,11 +164,18 @@ function generateNaturalBusinessName(niche: string, city: string, i: number): st
   const patterns = [
     `${prefix} ${suffix}`,
     `${lmark} ${suffix}`,
-    `${prefix} ${formattedNiche} ${suffix}`,
     `${lmark} ${prefix} ${suffix}`
   ];
 
-  return patterns[i % patterns.length];
+  let raw = patterns[i % patterns.length];
+  const words = raw.split(' ');
+  const uniqueWords: string[] = [];
+  words.forEach(w => {
+    if (!uniqueWords.some(existing => existing.toLowerCase() === w.toLowerCase())) {
+      uniqueWords.push(w);
+    }
+  });
+  return uniqueWords.join(' ');
 }
 
 // Global in-memory store for active CRM leads
