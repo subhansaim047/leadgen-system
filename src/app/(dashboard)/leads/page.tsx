@@ -96,7 +96,9 @@ export default function LeadsPage() {
       await updateLeadStatus(lead.id, 'contacted', 'Email client launched');
     } catch (e) {}
 
-    window.open(`mailto:${emailTo}?subject=${subject}&body=${body}`, '_blank');
+    // Launch Gmail Webmail Compose directly (eliminates empty mailto tab)
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailTo)}&su=${subject}&body=${body}`;
+    window.open(gmailUrl, '_blank');
     loadLeads();
   };
 
