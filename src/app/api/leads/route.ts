@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { LEADS_STORE, clearAllLeads } from './data';
+import { getPersistedLeads, clearAllLeads } from './data';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   const niche = searchParams.get('niche')?.toLowerCase();
   const status = searchParams.get('status')?.toLowerCase();
 
-  let filtered = [...LEADS_STORE];
+  let filtered = getPersistedLeads();
 
   if (search) {
     filtered = filtered.filter(l => 

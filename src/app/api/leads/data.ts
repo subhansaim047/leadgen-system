@@ -1,3 +1,7 @@
+import fs from 'fs';
+
+const TMP_DB_PATH = '/tmp/leads_db.json';
+
 export const buildCustomTemplate = (businessName: string, niche: string) => {
   const n = niche || 'services';
   return `Hey ${businessName}! 👋
@@ -173,6 +177,25 @@ export const LEADS_STORE: any[] = [];
 // Historical Memory Blacklist: Remembers every single lead ever exported/downloaded
 export const DOWNLOADED_LEADS_HISTORY = new Set<string>();
 
+export function getPersistedLeads(): any[] {
+  try {
+    if (fs.existsSync(TMP_DB_PATH)) {
+      const raw = fs.readFileSync(TMP_DB_PATH, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {}
+  return LEADS_STORE;
+}
+
+export function savePersistedLeads(leads: any[]) {
+  try {
+    fs.writeFileSync(TMP_DB_PATH, JSON.stringify(leads), 'utf-8');
+  } catch (e) {}
+}
+
 export function markLeadsAsExported(leads: any[]) {
   leads.forEach((l) => {
     const key = `${(l.business_name || '').toLowerCase().trim()}_${(l.city || '').toLowerCase().trim()}`;
@@ -183,97 +206,28 @@ export function markLeadsAsExported(leads: any[]) {
 export function isLeadAlreadyExportedOrInCrm(businessName: string, city: string): boolean {
   const key = `${businessName.toLowerCase().trim()}_${city.toLowerCase().trim()}`;
   
-  // 1. Check if exported in past downloads
   if (DOWNLOADED_LEADS_HISTORY.has(key)) return true;
 
-  // 2. Check if currently in active CRM store
-  return LEADS_STORE.some(
+  const currentStore = getPersistedLeads();
+  return currentStore.some(
     (l) => `${l.business_name.toLowerCase().trim()}_${l.city.toLowerCase().trim()}` === key
   );
 }
 
 export function clearAllLeads() {
   LEADS_STORE.length = 0;
+  savePersistedLeads([]);
 }
 
 export function deleteLeadById(id: string) {
-  const index = LEADS_STORE.findIndex(l => l.id === id);
+  const currentStore = getPersistedLeads();
+  const index = currentStore.findIndex(l => l.id === id);
   if (index !== -1) {
-    LEADS_STORE.splice(index, 1);
+    currentStore.splice(index, 1);
+    savePersistedLeads(currentStore);
+    LEADS_STORE.length = 0;
+    LEADS_STORE.push(...currentStore);
     return true;
   }
   return false;
-}
-
-export function generateAndAddLeads(niche: string, city: string, country: string, count: number = 50) {
-  const n = niche || 'Business';
-  const c = city || 'Austin';
-  const cnt = country || 'USA';
-  const numToGen = Math.min(count || 50, 50);
-
-  const createdLeads = [];
-
-  for (let i = 1; i <= numToGen * 4 && createdLeads.length < numToGen; i++) {
-    const bName = generateNaturalBusinessName(n, c, i);
-    
-    // Strict Historical Blacklist & CRM Deduplication Check
-    const alreadyExists = isLeadAlreadyExportedOrInCrm(bName, c);
-
-    if (!alreadyExists) {
-      const phone = `+1 (${Math.floor(Math.random() * 800) + 200}) ${Math.floor(Math.random() * 800) + 200}-${Math.floor(Math.random() * 9000) + 1000}`;
-      const id = `lead-gen-${Date.now()}-${i}`;
-      const rating = Number((Math.random() * 0.8 + 4.2).toFixed(1));
-      const reviews = Math.floor(Math.random() * 220) + 22;
-
-      const templateText = buildCustomTemplate(bName, n);
-
-      const cleanHandle = `${bName}`.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const fbUrl = `https://www.facebook.com/${cleanHandle}`;
-      const igUrl = `https://www.instagram.com/${cleanHandle}/`;
-
-      const newLead = {
-        id,
-        business_name: bName,
-        niche: n,
-        country: cnt,
-        city: c,
-        address: `${c} Main Market, ${c}, ${cnt}`,
-        phone,
-        normalized_phone: phone.replace(/\D/g, '').slice(-10),
-        website_url: null, // STRICTLY ZERO WEBSITE
-        website_type: 'none',
-        google_rating: rating,
-        review_count: reviews,
-        google_maps_url: `https://maps.google.com/?q=${encodeURIComponent(bName)}+${encodeURIComponent(c)}`,
-        fb_url: fbUrl,
-        ig_url: igUrl,
-        confidence_score: 98,
-        status: 'new',
-        created_at: new Date().toISOString(),
-        audit: {
-          id: `audit-${id}`,
-          has_ssl: false,
-          is_mobile_friendly: false,
-          load_time_seconds: 0,
-          cms_detected: 'none',
-          audit_score: 10,
-          issues: ['No Website Found', 'Missing SSL Certificate', 'No Online Booking System'],
-          summary: `Top rated active ${n} in ${c} with ${reviews} Google reviews but zero official website.`
-        },
-        ai_analysis: {
-          opportunity_level: 'High',
-          estimated_deal_size: '$1,800 - $3,500',
-          recommended_pitch: `Build high-converting Next.js website for ${bName}.`,
-          cold_email_subject: `FREE demo website for ${bName}`,
-          cold_email_body: templateText,
-          social_dm_text: templateText
-        }
-      };
-
-      LEADS_STORE.unshift(newLead);
-      createdLeads.push(newLead);
-    }
-  }
-
-  return createdLeads;
 }

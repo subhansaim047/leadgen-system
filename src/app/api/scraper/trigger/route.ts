@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { LEADS_STORE, buildCustomTemplate, isLeadAlreadyExportedOrInCrm } from '../../leads/data';
+import { LEADS_STORE, buildCustomTemplate, isLeadAlreadyExportedOrInCrm, savePersistedLeads } from '../../leads/data';
 
 interface ScrapeBody {
   niche: string;
@@ -521,6 +521,8 @@ export async function POST(request: Request) {
       }
     }
   }
+
+  savePersistedLeads(LEADS_STORE);
 
   const durationSeconds = Number(((Date.now() - startTime) / 1000).toFixed(1));
   const jobId = 'job-' + Math.random().toString(36).substring(2, 9);
