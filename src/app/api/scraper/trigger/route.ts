@@ -435,6 +435,11 @@ export async function POST(request: Request) {
   const limit = Math.min(body.limit || 50, 100);
   const websiteFilter = body.website_filter || 'none';
 
+  const currentPersisted = getPersistedLeads();
+  if (LEADS_STORE.length === 0 && currentPersisted.length > 0) {
+    LEADS_STORE.push(...currentPersisted);
+  }
+
   const startTime = Date.now();
   const newLeads = [];
 
