@@ -156,6 +156,33 @@ export default function SettingsPage() {
             <div className={styles.formGroup}>
               <label className={styles.label}>Niche / Business Category / Keywords</label>
               <input type="text" className={styles.input} value={niche} onChange={(e) => setNiche(e.target.value)} placeholder="e.g. Beauty Salons, Dental Clinics, Plumbers" required />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
+                {[
+                  'Auto Detailing', 'Car Wash', 'Roofing Companies', 'HVAC Services',
+                  'Plumbing Services', 'Landscaping Companies', 'Cleaning Services', 'Beauty Salons',
+                  'Barber Shops', 'Dental Clinics', 'Physiotherapy Clinics', 'Construction Companies',
+                  'Electricians', 'Locksmiths', 'Restaurants & Cafés', 'Bakeries',
+                  'Gyms & Fitness Studios', 'Pet Grooming Services', 'Real Estate Agencies', 'Local Retail Shops'
+                ].map(item => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setNiche(item)}
+                    style={{
+                      padding: '4px 10px',
+                      fontSize: '12px',
+                      borderRadius: '12px',
+                      border: niche === item ? '1px solid #3b82f6' : '1px solid var(--border-color)',
+                      background: niche === item ? 'rgba(59, 130, 246, 0.2)' : 'var(--bg-secondary)',
+                      color: niche === item ? '#60a5fa' : 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className={styles.formGroup}>
