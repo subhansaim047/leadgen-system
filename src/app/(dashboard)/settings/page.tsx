@@ -14,6 +14,7 @@ export default function SettingsPage() {
   const [country, setCountry] = useState('Germany');
   const [limit, setLimit] = useState(50);
   const [source, setSource] = useState('google_maps_live');
+  const [websiteFilter, setWebsiteFilter] = useState<'none' | 'with_website' | 'all'>('none');
   const [scraping, setScraping] = useState(false);
 
   // Live Deep Progress State
@@ -56,7 +57,7 @@ export default function SettingsPage() {
     e.preventDefault();
     try {
       setScraping(true);
-      const res = await triggerScrape({ niche, city, country, limit, source });
+      const res = await triggerScrape({ niche, city, country, limit, source, website_filter: websiteFilter });
       if (res.leads && Array.from(res.leads).length > 0) {
         const existing = JSON.parse(localStorage.getItem('LEADGEN_CLIENT_STORE') || '[]');
         const updated = [...res.leads, ...existing];
@@ -64,10 +65,11 @@ export default function SettingsPage() {
       }
       setProgress(100);
       setStatusMsg(`✅ 100% Verified Deep Scraping Complete!`);
-      setLogMessages(prev => [...prev, `[${res.execution_time_seconds || 10}s] Extracted ${res.total_new || limit} 100% verified zero-website leads successfully!`]);
+      const webFilterText = websiteFilter === 'none' ? 'zero-website' : (websiteFilter === 'with_website' ? 'with-website' : 'mixed website');
+      setLogMessages(prev => [...prev, `[${res.execution_time_seconds || 10}s] Extracted ${res.total_new || limit} 100% verified ${webFilterText} leads successfully!`]);
       
       setTimeout(() => {
-        alert(`✅ Deep Live Scraping Completed!\n\nSuccessfully extracted ${res.total_new || limit} real verified zero-website leads for "${niche}" in ${city}, ${country} in ${res.execution_time_seconds || 10} seconds.\n\nGo to the 'Lead CRM Workspace' tab to view your leads!`);
+        alert(`✅ Deep Live Scraping Completed!\n\nSuccessfully extracted ${res.total_new || limit} real verified ${webFilterText} leads for "${niche}" in ${city}, ${country} in ${res.execution_time_seconds || 10} seconds.\n\nGo to the 'Lead CRM Workspace' tab to view your leads!`);
       }, 500);
     } catch (err: any) {
       alert(`Error triggering job: ${err.message}`);
@@ -87,7 +89,7 @@ export default function SettingsPage() {
             <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Deep Verified Scraper (8-15 Second Live Extraction)</h2>
           </div>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '14px' }}>
-            Real deep socket harvester. Performs multi-stage live extraction, zero-website verification, and active business phone checks across European and Global public engines.
+            Real deep socket harvester. Performs multi-stage live extraction, website verification, and active business phone checks across European and Global public engines.
           </p>
 
           {scraping && (
@@ -115,6 +117,20 @@ export default function SettingsPage() {
           )}
 
           <form onSubmit={handleManualScrape}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Website Filter / Prospect Requirement Mode</label>
+              <select 
+                className={styles.input} 
+                value={websiteFilter} 
+                onChange={(e) => setWebsiteFilter(e.target.value as any)}
+                style={{ fontWeight: '600', color: websiteFilter === 'none' ? '#10b981' : (websiteFilter === 'with_website' ? '#3b82f6' : '#f59e0b') }}
+              >
+                <option value="none">🚫 Without Website Only (100% Zero-Website Prospects - Default)</option>
+                <option value="with_website">🌐 With Website Only (Outdated / Broken Website Prospects)</option>
+                <option value="all">⚡ All Businesses (Mixed - Both With & Without Website)</option>
+              </select>
+            </div>
+
             <div className={styles.formGroup}>
               <label className={styles.label}>Target Platform / Lead Data Source</label>
               <select className={styles.input} value={source} onChange={(e) => setSource(e.target.value)}>

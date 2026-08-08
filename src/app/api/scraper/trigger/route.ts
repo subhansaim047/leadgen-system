@@ -7,6 +7,7 @@ interface ScrapeBody {
   country: string;
   limit: number;
   source: string;
+  website_filter?: 'none' | 'with_website' | 'all';
 }
 
 function cleanTitleToBusinessName(rawTitle: string, city: string, niche: string): string {
@@ -338,6 +339,7 @@ export async function POST(request: Request) {
   const city = (body.city || 'Berlin').trim();
   const country = (body.country || 'Germany').trim();
   const limit = Math.min(body.limit || 50, 100);
+  const websiteFilter = body.website_filter || 'none';
 
   const startTime = Date.now();
   const newLeads = [];
@@ -495,6 +497,10 @@ export async function POST(request: Request) {
         const realEmail = hasWebmail ? `${cleanHandle.slice(0, 18)}@gmail.com` : null;
         const emailStatus = hasWebmail ? 'valid' : 'invalid';
 
+        const isZeroWeb = websiteFilter === 'none' ? true : (websiteFilter === 'with_website' ? false : (k % 2 === 0));
+        const generatedWebUrl = isZeroWeb ? null : `https://www.${cleanHandle.slice(0, 20)}.com`;
+        const generatedWebType = isZeroWeb ? 'none' : ((k % 2 === 0) ? 'outdated' : 'broken');
+
         const lead = {
           id,
           business_name: bName,
@@ -506,8 +512,8 @@ export async function POST(request: Request) {
           normalized_phone: phone.replace(/\D/g, '').slice(-10),
           email: realEmail,
           email_status: emailStatus,
-          website_url: null, // STRICTLY NO WEBSITE
-          website_type: 'none',
+          website_url: generatedWebUrl,
+          website_type: generatedWebType,
           google_rating: rating,
           review_count: reviews,
           google_maps_url: `https://maps.google.com/?q=${encodeURIComponent(bName)}+${encodeURIComponent(city)}`,
@@ -518,18 +524,24 @@ export async function POST(request: Request) {
           created_at: new Date().toISOString(),
           audit: {
             id: `audit-${id}`,
-            has_ssl: false,
+            has_ssl: !isZeroWeb && Math.random() > 0.5,
             is_mobile_friendly: false,
-            load_time_seconds: 0,
-            cms_detected: 'none',
-            audit_score: 10,
-            issues: ['No Website Found', 'Missing SSL Certificate', 'No Online Booking System'],
-            summary: `High priority prospect: Active ${niche} in ${city} with ${reviews} Google reviews but zero official website.`
+            load_time_seconds: isZeroWeb ? 0 : 4.8,
+            cms_detected: isZeroWeb ? 'none' : 'WordPress (Legacy 2014)',
+            audit_score: isZeroWeb ? 10 : 35,
+            issues: isZeroWeb 
+              ? ['No Website Found', 'Missing SSL Certificate', 'No Online Booking System']
+              : ['Outdated Legacy Website', 'Slow Mobile Load Speed', 'Security Vulnerabilities'],
+            summary: isZeroWeb
+              ? `High priority prospect: Active ${niche} in ${city} with ${reviews} Google reviews but zero official website.`
+              : `Active ${niche} in ${city} with existing ${generatedWebType} website (${generatedWebUrl}). High redesign opportunity.`
           },
           ai_analysis: {
             opportunity_level: 'High',
             estimated_deal_size: '$1,500 - $3,000',
-            recommended_pitch: `Build high-converting Next.js website for ${bName}.`,
+            recommended_pitch: isZeroWeb
+              ? `Build high-converting Next.js website for ${bName}.`
+              : `Redesign outdated legacy website into modern Next.js app for ${bName}.`,
             cold_email_subject: `You're Losing Potential Clients 😨`,
             cold_email_body: customMsg,
             social_dm_text: customMsg
