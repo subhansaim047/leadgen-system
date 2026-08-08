@@ -12,22 +12,60 @@ I built a FREE demo site for you. Want to see it? No cost, no strings.
 WhatsApp: +1 (249) 898-4111`;
 };
 
+const CITY_BOUND_LANDMARKS: Record<string, string[]> = {
+  'daska': ['Civil Hospital Road', 'College Road', 'Nishtar Road', 'Canal Bank', 'Pasrur Road', 'Sambrial Road', 'Main Market', 'Kutchery Road', 'Circular Road'],
+  'gujranwala': ['Satellite Town', 'Model Town', 'Peoples Colony', 'DC Colony', 'Wapda Town', 'Shaheenabad', 'Trust Plaza', 'Garden Town', 'GT Road', 'Canal View'],
+  'sialkot': ['Paris Road', 'Cantt Area', 'Kashmir Road', 'Defence Road', 'Commissioner Road', 'Saddar Bazaar', 'Kutchery Road', 'Abbott Road'],
+  'lahore': ['Gulberg III', 'DHA Phase 5', 'MM Alam Road', 'Model Town', 'Johar Town', 'Wapda Town', 'Garden Town', 'Mall Road'],
+  'karachi': ['Clifton Block 4', 'Defence Phase 6', 'PECHS', 'Tariq Road', 'North Nazimabad', 'Gulshan-e-Iqbal'],
+  'islamabad': ['F-7 Markaz', 'F-6 Markaz', 'Blue Area', 'E-11', 'G-9 Markaz', 'I-8 Markaz']
+};
+
+const NICHE_NAMING_RULES: Record<string, { prefixes: string[], suffixes: string[] }> = {
+  'restaurant': {
+    prefixes: ['Al-Rehman', 'Kababish', 'Desi Dera', 'Crown', 'Silver Spoon', 'Chief', 'Al-Haaj', 'Sultan', 'Golden', 'Prime', 'The Local', 'Royal', 'Khyber'],
+    suffixes: ['Family Restaurant', 'Grill & BBQ', 'Tikka House', 'Karahi House', 'Broast & Fast Food', 'Bistro', 'Refreshment Center', 'Biryani House', 'Steakhouse']
+  },
+  'beauty': {
+    prefixes: ['Glamour', 'Nayla', 'Standard', 'Style Inn', 'Faiza', 'Rose', 'Sanam', 'Grace', 'Blush & Glow', 'Zari', 'Elegance', 'Velvet Touch'],
+    suffixes: ['Beauty Salon & Spa', 'Bridal Studio', 'Beauty Clinic', 'Beauty Parlour', 'Makeup Lounge', 'Skin Care Studio']
+  },
+  'dental': {
+    prefixes: ['Al-Razi', 'Shaheen', 'Kashmir', 'Al-Rehman', 'City', 'Grace', 'Advanced', 'Care', 'Apex', 'Precision'],
+    suffixes: ['Dental Care', 'Dental Clinic', 'Smile Studio', 'Dental Center', 'Orthodontic Clinic', 'Dental Surgery']
+  }
+};
+
 function generateNaturalBusinessName(niche: string, city: string, i: number): string {
   const formattedNiche = niche.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   const formattedCity = city.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-  const modifiers = ['Apex', 'Premier', 'Elite', 'Global', 'Precision', 'Star', 'Express', 'Quality', 'Prime', 'Royal', 'Select', 'Summit', 'Vanguard', 'Heritage', 'Crest', 'Pinnacle', 'Imperial', 'Benchmark', 'Matrix', 'Atlas', 'Titan'];
-  const companyTypes = ['Ltd', 'Co.', 'Group', 'Solutions', 'Center', 'Hub', 'Services', 'Supplies', 'Direct', 'Enterprise', 'Partners'];
+  const cLower = city.toLowerCase().trim();
+  const nLower = niche.toLowerCase().trim();
 
-  const mod = modifiers[i % modifiers.length];
-  const comp = companyTypes[i % companyTypes.length];
+  const landmarks = CITY_BOUND_LANDMARKS[cLower] || [
+    `${formattedCity} Central`,
+    `${formattedCity} Main Market`,
+    `${formattedCity} Plaza`,
+    `${formattedCity} Square`
+  ];
+  const lmark = landmarks[i % landmarks.length];
+
+  let rule = NICHE_NAMING_RULES['restaurant'];
+  Object.keys(NICHE_NAMING_RULES).forEach(key => {
+    if (nLower.includes(key)) {
+      rule = NICHE_NAMING_RULES[key];
+    }
+  });
+
+  const prefix = rule.prefixes[i % rule.prefixes.length];
+  const suffix = rule.suffixes[i % rule.suffixes.length];
 
   const patterns = [
-    `${formattedCity} ${mod} ${formattedNiche}`,
-    `${mod} ${formattedNiche} ${formattedCity}`,
-    `${formattedCity} ${formattedNiche} ${comp}`,
-    `${mod} ${formattedNiche} ${comp}`,
-    `${formattedCity} ${mod} ${formattedNiche} ${comp}`
+    `${prefix} ${suffix}`,
+    `${lmark} ${suffix}`,
+    `${prefix} ${formattedNiche} ${suffix}`,
+    `${lmark} ${prefix} ${suffix}`
   ];
 
   return patterns[i % patterns.length];
@@ -103,7 +141,7 @@ export function generateAndAddLeads(niche: string, city: string, country: string
         niche: n,
         country: cnt,
         city: c,
-        address: `${Math.floor(Math.random() * 8999) + 100} Main Ave, ${c}, ${cnt}`,
+        address: `${c} Main Market, ${c}, ${cnt}`,
         phone,
         normalized_phone: phone.replace(/\D/g, '').slice(-10),
         website_url: null, // STRICTLY ZERO WEBSITE
