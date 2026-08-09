@@ -5,59 +5,116 @@ let activeTask = null;
 let scrapedLeads = new Set();
 let scrapedCount = 0;
 let scrollInterval = null;
+let isScrapingRunning = false;
 
-chrome.storage.local.get(['currentScrapeTask'], (result) => {
-  if (result.currentScrapeTask && result.currentScrapeTask.active) {
-    activeTask = result.currentScrapeTask;
-    console.log("Starting scrape task:", activeTask);
-    setTimeout(startScraping, 3000); // Wait 3s for initial maps load
+function initScraper() {
+  chrome.storage.local.get(['currentScrapeTask'], (result) => {
+    if (result.currentScrapeTask && result.currentScrapeTask.active && !isScrapingRunning) {
+      activeTask = result.currentScrapeTask;
+      console.log("Starting scrape task from storage:", activeTask);
+      isScrapingRunning = true;
+      setTimeout(startScraping, 4000); // 4 sec initial wait for Maps UI to stabilize
+    }
+  });
+}
+
+// Check on load
+initScraper();
+
+// Listen for storage changes in case task was set after page started loading
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes.currentScrapeTask && changes.currentScrapeTask.newValue?.active) {
+    if (!isScrapingRunning) {
+      activeTask = changes.currentScrapeTask.newValue;
+      console.log("Starting scrape task from storage change:", activeTask);
+      isScrapingRunning = true;
+      setTimeout(startScraping, 4000);
+    }
   }
 });
 
-function startScraping() {
-  const feed = document.querySelector('[role="feed"]');
+function scrollFeedContainer() {
+  // 1. Try finding role="feed"
+  let feed = document.querySelector('[role="feed"]');
+  
+  // 2. Try finding scrollable div in left pane
   if (!feed) {
-    console.log("Feed not found, retrying...");
-    setTimeout(startScraping, 2000);
-    return;
+    const divs = document.querySelectorAll('div');
+    for (let d of divs) {
+      if (d.scrollHeight > d.clientHeight && d.clientHeight > 200 && d.getBoundingClientRect().left < window.innerWidth * 0.6) {
+        feed = d;
+        break;
+      }
+    }
   }
 
-  scrollInterval = setInterval(() => {
-    // Scroll down to load more
+  if (feed) {
     feed.scrollTop = feed.scrollHeight;
-    
-    // Parse current items
-    const items = feed.querySelectorAll('.Nv2PK'); // Typical class for a Maps listing item
-    
-    items.forEach(item => {
-      const linkEl = item.querySelector('a.hfpxzc');
-      if (!linkEl) return;
+  }
+
+  // Fallback: bring the last place link into view
+  const links = document.querySelectorAll('a[href*="/maps/place/"]');
+  if (links.length > 0) {
+    links[links.length - 1].scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }
+}
+
+function startScraping() {
+  console.log("Live Maps Scraping Loop Started! Task:", activeTask);
+  
+  scrollInterval = setInterval(() => {
+    if (!activeTask) return;
+
+    // Scroll down to load more results
+    scrollFeedContainer();
+
+    // Get all listing containers or place links
+    const placeLinks = Array.from(document.querySelectorAll('a[href*="/maps/place/"]'));
+
+    placeLinks.forEach(linkEl => {
       const url = linkEl.href;
-      
-      // Prevent duplicates
       if (scrapedLeads.has(url)) return;
       if (scrapedCount >= activeTask.limit) return;
-      
-      const bName = linkEl.getAttribute('aria-label') || '';
-      
-      // Extract other details (these classes change often, we do our best with generic aria-labels or text)
-      const textContext = item.innerText;
-      
-      // Very rough extraction from inner text (Rating, Reviews, Phone, Website)
-      let phone = '';
-      let hasWebsite = textContext.includes('Website');
-      
-      const phoneMatch = textContext.match(/\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/);
-      if (phoneMatch) phone = phoneMatch[0];
 
-      // Filtering logic based on user preference
-      if (activeTask.website_filter === 'with_active_website' && !hasWebsite) return;
-      if (activeTask.website_filter === 'none' && hasWebsite) return;
+      const bName = linkEl.getAttribute('aria-label') || linkEl.innerText.trim();
+      if (!bName) return;
+
+      // Find the card container surrounding this place link
+      let card = linkEl.parentElement;
+      for (let i = 0; i < 6; i++) {
+        if (card && card.parentElement && card.offsetHeight < 400) {
+          card = card.parentElement;
+        }
+      }
+
+      const cardText = card ? card.innerText : linkEl.innerText;
+
+      // Check if this business has a website button or website link
+      // Google Maps listing cards show a "Website" button/link if they have one
+      const hasWebsite = card ? (
+        Boolean(card.querySelector('a[data-value="Website"]')) ||
+        Boolean(card.querySelector('a[aria-label*="website" i]')) ||
+        cardText.toLowerCase().includes('website')
+      ) : cardText.toLowerCase().includes('website');
+
+      // Apply User Filters
+      // If user selected 'none' (only leads WITHOUT website), skip if it has website
+      if (activeTask.website_filter === 'none' && hasWebsite) {
+        return;
+      }
+      // If user selected 'with_active_website' (only leads WITH website), skip if no website
+      if (activeTask.website_filter === 'with_active_website' && !hasWebsite) {
+        return;
+      }
+
+      // Extract phone number from text
+      let phone = '';
+      const phoneMatch = cardText.match(/\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/);
+      if (phoneMatch) phone = phoneMatch[0];
 
       scrapedLeads.add(url);
       scrapedCount++;
 
-      // Build lead object similar to our backend format
       const cleanHandle = `${bName}${activeTask.city}`.toLowerCase().replace(/[^a-z0-9]/g, '');
       const lead = {
         id: `live-ext-${Date.now()}-${scrapedCount}`,
@@ -65,7 +122,7 @@ function startScraping() {
         niche: activeTask.niche,
         country: activeTask.country,
         city: activeTask.city,
-        address: `${activeTask.city}, ${activeTask.country}`, // We can refine this by opening the card, but for now we list
+        address: `${activeTask.city}, ${activeTask.country}`,
         phone: phone || "No phone listed",
         normalized_phone: phone ? phone.replace(/\D/g, '').slice(-10) : "",
         email: hasWebsite ? `info@${cleanHandle}.com` : null,
@@ -88,19 +145,20 @@ function startScraping() {
           cms_detected: hasWebsite ? 'Unknown' : 'none',
           audit_score: hasWebsite ? 90 : 10,
           issues: hasWebsite ? ['Verified via Live Extension Scrape'] : ['No Website'],
-          summary: `Lived scraped from Google Maps directly in your browser.`
+          summary: `Live scraped from Google Maps directly in your browser.`
         }
       };
 
-      console.log("Scraped Lead:", lead);
+      console.log(`[Lead ${scrapedCount}/${activeTask.limit}] Scraped:`, lead.business_name);
       chrome.runtime.sendMessage({ action: 'LEAD_SCRAPED', payload: lead });
     });
 
+    // Check if target limit is reached
     if (scrapedCount >= activeTask.limit) {
       clearInterval(scrollInterval);
       chrome.runtime.sendMessage({ action: 'SCRAPE_FINISHED' });
-      alert(`Scraped ${scrapedCount} leads successfully! You can close this tab now.`);
+      alert(`Scraping Completed!\nSuccessfully extracted ${scrapedCount} leads matching your criteria.`);
     }
 
-  }, 3000);
+  }, 2500); // Repeat every 2.5 seconds
 }

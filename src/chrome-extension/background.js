@@ -10,14 +10,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const query = encodeURIComponent(`${niche} in ${city} ${country}`);
     const mapsUrl = `https://www.google.com/maps/search/${query}`;
     
-    // Open a new tab
-    chrome.tabs.create({ url: mapsUrl, active: true }, (tab) => {
-      scrapingTabId = tab.id;
-      
-      // Wait for the tab to load before sending the start signal
-      // Content script will notify background when it's ready, or we can just pass the config
-      chrome.storage.local.set({ 
-        currentScrapeTask: { niche, city, country, limit, website_filter, active: true } 
+    // Set storage FIRST so content script finds it immediately
+    chrome.storage.local.set({ 
+      currentScrapeTask: { niche, city, country, limit: Number(limit) || 20, website_filter, active: true } 
+    }, () => {
+      chrome.tabs.create({ url: mapsUrl, active: true }, (tab) => {
+        scrapingTabId = tab.id;
       });
     });
   }

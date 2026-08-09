@@ -3,7 +3,7 @@
   "name": "LeadGen System Real Scraper",
   "version": "1.0",
   "description": "Visual auto-scrolling scraper for Google Maps connected to LeadGen Dashboard.",
-  "permissions": ["tabs", "scripting"],
+  "permissions": ["tabs", "scripting", "storage"],
   "host_permissions": [
     "*://www.google.com/maps/*",
     "*://localhost/*",
