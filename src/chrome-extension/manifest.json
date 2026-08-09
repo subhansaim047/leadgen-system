@@ -5,9 +5,7 @@
   "description": "Visual auto-scrolling scraper for Google Maps connected to LeadGen Dashboard.",
   "permissions": ["tabs", "scripting", "storage"],
   "host_permissions": [
-    "*://www.google.com/maps/*",
-    "*://localhost/*",
-    "*://*.vercel.app/*"
+    "<all_urls>"
   ],
   "background": {
     "service_worker": "background.js"
@@ -18,7 +16,12 @@
       "js": ["content-app.js"]
     },
     {
-      "matches": ["*://www.google.com/maps/*"],
+      "matches": [
+        "*://*.google.com/maps*",
+        "*://maps.google.com/*",
+        "*://*.google.*/maps*",
+        "*://www.google.com/maps*"
+      ],
       "js": ["content-maps.js"]
     }
   ]

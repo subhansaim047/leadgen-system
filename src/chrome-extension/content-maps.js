@@ -73,37 +73,20 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 function multiScrollFeed() {
-  // Strategy 1: Find role="feed"
-  let feed = document.querySelector('[role="feed"]');
-  
-  // Strategy 2: Find left pane scrollable container
-  if (!feed) {
-    const divs = document.querySelectorAll('div');
-    for (let d of divs) {
-      if (d.scrollHeight > d.clientHeight && d.clientHeight > 200 && d.getBoundingClientRect().left < window.innerWidth * 0.6) {
-        feed = d;
-        break;
-      }
+  // Find ALL scrollable containers on the page and scroll them down
+  const allDivs = document.querySelectorAll('div');
+  allDivs.forEach(div => {
+    if (div.scrollHeight > div.clientHeight && div.clientHeight > 150) {
+      // Scroll down directly
+      div.scrollTop = div.scrollHeight;
+      
+      // Dispatch events to trigger Google Maps dynamic lazy loader
+      div.dispatchEvent(new Event('scroll', { bubbles: true }));
+      div.dispatchEvent(new WheelEvent('wheel', { deltaY: 1500, bubbles: true, cancelable: true }));
     }
-  }
+  });
 
-  if (feed) {
-    // A. Direct scroll
-    feed.scrollTop = feed.scrollHeight;
-    
-    // B. Dispatch scroll event
-    feed.dispatchEvent(new Event('scroll', { bubbles: true }));
-
-    // C. Dispatch synthetic Mouse Wheel event (forces Google Maps lazy loader)
-    const wheelEvt = new WheelEvent('wheel', {
-      deltaY: 1200,
-      bubbles: true,
-      cancelable: true
-    });
-    feed.dispatchEvent(wheelEvt);
-  }
-
-  // Strategy 3: Scroll last place item into view
+  // Fallback: bring the last place link into view
   const links = document.querySelectorAll('a[href*="/maps/place/"]');
   if (links.length > 0) {
     links[links.length - 1].scrollIntoView({ behavior: 'smooth', block: 'end' });
