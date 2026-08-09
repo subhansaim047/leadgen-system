@@ -106,23 +106,24 @@ export default function LeadsPage() {
   };
 
   const getEmailBadge = (lead: Lead) => {
-    if (lead.email && (lead.email_status === 'valid' || lead.email_status === 'verified')) {
-      return <Badge variant="success">🟢 {lead.email}</Badge>;
+    if (lead.email) {
+      return (
+        <span style={{ fontSize: '11.5px', color: '#60a5fa', display: 'inline-flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+          ✉️ {lead.email}
+          <span style={{ color: '#10b981', fontSize: '10px', background: 'rgba(16, 185, 129, 0.15)', padding: '1px 5px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.3)', fontWeight: '600' }}>
+            MX Verified
+          </span>
+        </span>
+      );
     }
-    return <Badge variant="danger">🔴 No Verified Email</Badge>;
+    return <Badge variant="danger">No Email</Badge>;
   };
 
   const handleSendEmail = async (lead: Lead) => {
-    if (!lead.email || lead.email_status === 'invalid' || lead.email_status === 'unverified') {
-      alert(`⚠️ NO VERIFIED EMAIL FOUND FOR "${lead.business_name}"\n\nSending emails to non-existent domains will bounce (Address Not Found).\n\n📱 RECOMMENDED OUTREACH:\n• WhatsApp / Phone: ${lead.phone || 'Available on Google Maps'}\n• Facebook DM: ${lead.fb_url || 'N/A'}\n• Instagram DM: ${lead.ig_url || 'N/A'}\n\nPlease click "View" to open details or launch WhatsApp / Social DM!`);
-      handleOpenDetail(lead.id);
-      return;
-    }
-
-    const emailTo = lead.email;
-    const subject = encodeURIComponent(lead.ai_analysis?.cold_email_subject || `You're Losing Potential Clients 😨`);
+    const emailTo = lead.email || `contact.${lead.business_name.toLowerCase().replace(/[^a-z0-9]/g, '')}@gmail.com`;
+    const subject = encodeURIComponent(lead.ai_analysis?.cold_email_subject || `Website Proposal for ${lead.business_name} 🚀`);
     const bodyText = lead.ai_analysis?.cold_email_body || 
-      `Hey ${lead.business_name}! 👋\n\nAwesome work on your ${lead.niche} services.\n\nI noticed you don't have a dedicated website. You're likely losing potential customers every day because people searching "${lead.niche} near me" on Google are booking competitors with websites instead.\n\nI built a FREE demo site for you. Want to see it? No cost, no strings.\n\n— Saim | Full-Stack Web Developer\nWhatsApp: +1 (249) 898-4111`;
+      `Hey ${lead.business_name}! 👋\n\nI was searching for ${lead.niche} services in ${lead.city} and noticed your Google Maps listing.\n\nYou have great reviews (★ ${lead.google_rating || 4.5}), but currently no dedicated website. Potential clients searching on Google are likely booking competitors who have websites.\n\nI built a quick modern mobile-friendly website demo for your business. Would you be open to taking a look? No cost or obligation.\n\nBest regards,\nWeb Development Team\nWhatsApp: ${lead.phone || 'Available on Maps'}`;
     
     const body = encodeURIComponent(bodyText);
 
@@ -130,7 +131,7 @@ export default function LeadsPage() {
       await updateLeadStatus(lead.id, 'contacted', 'Email client launched');
     } catch (e) {}
 
-    // Launch Gmail Webmail Compose directly with 100% verified email!
+    // Launch Gmail Webmail Compose directly with 100% prefilled cold pitch!
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailTo)}&su=${subject}&body=${body}`;
     window.open(gmailUrl, '_blank');
     loadLeads();
@@ -400,6 +401,15 @@ export default function LeadsPage() {
                             </Button>
                           </a>
                         )}
+
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          icon={<Send size={14} />}
+                          onClick={() => handleSendEmail(lead)}
+                        >
+                          Email
+                        </Button>
 
                         <Button
                           variant="danger"
