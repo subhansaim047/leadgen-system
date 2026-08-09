@@ -101,6 +101,9 @@ export default function SettingsPage() {
   const [progress, setProgress] = useState(0);
   const [statusMsg, setStatusMsg] = useState('');
   const [logMessages, setLogMessages] = useState<string[]>([]);
+  
+  // Extension State
+  const [extensionInstalled, setExtensionInstalled] = useState(false);
 
   // When Country changes, update city automatically to 1st city of selected country
   const handleCountryChange = (newCountry: string) => {
@@ -110,9 +113,58 @@ export default function SettingsPage() {
     setIsCustomCity(false);
   };
 
+  const liveScrapedRef = React.useRef<any[]>([]);
+
+  useEffect(() => {
+    // Listen for extension messages
+    const handleMessage = (event: MessageEvent) => {
+      if (event.source !== window) return;
+      const { type, payload } = event.data;
+
+      if (type === 'EXTENSION_INSTALLED') {
+        setExtensionInstalled(true);
+        console.log("Extension connected!", payload);
+      } else if (type === 'LEAD_SCRAPED') {
+        // A live lead arrived from the extension
+        setLogMessages(prev => [...prev, `[Live] Scraped from Maps: ${payload.business_name} (${payload.website_type === 'none' ? 'No Website' : payload.website_url})`]);
+        setProgress(prev => Math.min(prev + 2, 95));
+        
+        liveScrapedRef.current.push(payload);
+        
+        // Save to local storage cache immediately
+        const existing = JSON.parse(localStorage.getItem('LEADGEN_CLIENT_STORE') || '[]');
+        const updated = [payload, ...existing];
+        localStorage.setItem('LEADGEN_CLIENT_STORE', JSON.stringify(updated));
+      } else if (type === 'SCRAPE_FINISHED') {
+        setScraping(false);
+        setProgress(100);
+        setStatusMsg("Live scraping finished! Synchronizing with database...");
+        setLogMessages(prev => [...prev, `[Live] Google Maps scraping completed successfully.`]);
+        
+        // Sync with backend API
+        if (liveScrapedRef.current.length > 0) {
+           fetch('/api/leads', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ leads: liveScrapedRef.current })
+           }).then(res => res.json()).then(data => {
+              setLogMessages(prev => [...prev, `[System] Saved ${data.saved} leads to database.`]);
+              setStatusMsg("Live scraping and sync completed!");
+              liveScrapedRef.current = []; // reset
+           }).catch(e => {
+              setLogMessages(prev => [...prev, `[Error] Failed to sync leads: ${e.message}`]);
+           });
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (scraping) {
+    if (scraping && !extensionInstalled) {
       setProgress(5);
       setStatusMsg(`Connecting to live business directory sockets...`);
       setLogMessages([
@@ -133,16 +185,33 @@ export default function SettingsPage() {
           setLogMessages(prev => [...prev, step.log]);
         }, (idx + 1) * 2200);
       });
-    } else {
+    } else if (!scraping) {
       setProgress(0);
       setStatusMsg('');
       setLogMessages([]);
     }
     return () => clearTimeout(timer);
-  }, [scraping, city, country, niche]);
+  }, [scraping, city, country, niche, extensionInstalled]);
 
   const handleManualScrape = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (extensionInstalled) {
+      // Use Live Chrome Extension
+      setScraping(true);
+      setLogMessages([`[Live] Sending task to Chrome Extension...`, `[Live] Opening Google Maps tab...`]);
+      setStatusMsg(`Connecting to Browser Extension...`);
+      setProgress(10);
+      
+      window.postMessage({
+        type: 'START_LIVE_SCRAPE',
+        payload: { niche, city, country, limit, website_filter: websiteFilter }
+      }, '*');
+      // The rest is handled by the event listener (LEAD_SCRAPED, SCRAPE_FINISHED)
+      return;
+    }
+
+    // Fallback to backend API
     try {
       setScraping(true);
       const res = await triggerScrape({ niche, city, country, limit, source, website_filter: websiteFilter });
@@ -174,9 +243,19 @@ export default function SettingsPage() {
             <Zap size={18} color="var(--accent-primary)" />
             <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Direct Business Intelligence Harvester</h2>
           </div>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '13.5px', lineHeight: '1.5' }}>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '10px', fontSize: '13.5px', lineHeight: '1.5' }}>
             Configure real-time extraction parameters, country/city targets, and prospect requirements across commercial business registries.
           </p>
+          {extensionInstalled && (
+            <div style={{ padding: '8px 12px', background: 'rgba(34, 197, 94, 0.1)', color: '#4ade80', borderRadius: '6px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+              <ShieldCheck size={16} /> Extension Connected: Google Maps Live Scraping is active.
+            </div>
+          )}
+          {!extensionInstalled && (
+            <div style={{ padding: '8px 12px', background: 'rgba(234, 179, 8, 0.1)', color: '#facc15', borderRadius: '6px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', border: '1px solid rgba(234, 179, 8, 0.2)' }}>
+              Using Cloud Fallback. Install the Chrome Extension for live visual Google Maps scraping.
+            </div>
+          )}
 
           {scraping && (
             <div style={{ margin: '20px 0', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>

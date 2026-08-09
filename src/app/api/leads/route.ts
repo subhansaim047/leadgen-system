@@ -42,3 +42,19 @@ export async function DELETE() {
   clearAllLeads();
   return NextResponse.json({ status: 'cleared', message: 'All leads deleted successfully' });
 }
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    if (body.leads && Array.isArray(body.leads)) {
+      const current = getPersistedLeads();
+      const updated = [...body.leads, ...current];
+      // Note: savePersistedLeads handles deduplication internally if implemented, or we just prepend
+      import('./data').then(m => m.savePersistedLeads(updated));
+      return NextResponse.json({ status: 'success', saved: body.leads.length });
+    }
+    return NextResponse.json({ status: 'error', message: 'Invalid payload' }, { status: 400 });
+  } catch (err: any) {
+    return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+  }
+}
