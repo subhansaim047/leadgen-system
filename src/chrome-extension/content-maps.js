@@ -3,6 +3,7 @@ console.log("LeadGen Maps Scraper Injected into Google Maps!");
 
 let activeTask = null;
 let scrapedLeads = new Set();
+let processedUrls = new Set();
 let scrapedCount = 0;
 let scrollInterval = null;
 let isScrapingRunning = false;
@@ -108,39 +109,47 @@ function startScraping() {
     updateHUD(`Scraped ${scrapedCount} / ${activeTask.limit} leads (Scanning ${placeLinks.length} items)...`);
 
     placeLinks.forEach(linkEl => {
-      const url = linkEl.href;
-      if (scrapedLeads.has(url)) return;
-      if (scrapedCount >= activeTask.limit) return;
+        const url = linkEl.href;
+        if (processedUrls.has(url)) return;
+        if (scrapedCount >= activeTask.limit) return;
 
-      const bName = linkEl.getAttribute('aria-label') || linkEl.innerText.trim();
-      if (!bName) return;
+        const bName = linkEl.getAttribute('aria-label') || linkEl.innerText.trim();
+        if (!bName) return;
 
-      // Find the card container surrounding this place link
-      let card = linkEl.parentElement;
-      for (let i = 0; i < 6; i++) {
-        if (card && card.parentElement && card.offsetHeight < 450) {
-          card = card.parentElement;
+        // Mark as evaluated so we don't re-parse this DOM node every 2s
+        processedUrls.add(url);
+
+        // Find the card container surrounding this place link
+        let card = linkEl.parentElement;
+        for (let i = 0; i < 6; i++) {
+          if (card && card.parentElement && card.offsetHeight < 450) {
+            card = card.parentElement;
+          }
         }
-      }
 
-      const cardText = card ? card.innerText : linkEl.innerText;
+        const cardText = card ? card.innerText.toLowerCase() : linkEl.innerText.toLowerCase();
 
-      // Detect if business has a website button or website link
-      const hasWebsite = card ? (
-        Boolean(card.querySelector('a[data-value="Website"]')) ||
-        Boolean(card.querySelector('a[aria-label*="website" i]')) ||
-        cardText.toLowerCase().includes('website')
-      ) : cardText.toLowerCase().includes('website');
+        // Detect if business has a website button or website link (handles English & German Google Maps)
+        const hasWebsite = card ? (
+          Boolean(card.querySelector('a[data-value="Website"]')) ||
+          Boolean(card.querySelector('a[data-value="Webseite"]')) ||
+          Boolean(card.querySelector('a[aria-label*="website" i]')) ||
+          Boolean(card.querySelector('a[aria-label*="webseite" i]')) ||
+          cardText.includes('website') ||
+          cardText.includes('webseite')
+        ) : (cardText.includes('website') || cardText.includes('webseite'));
 
-      // User Filter Enforcement:
-      // 'none' = ONLY leads WITHOUT website
-      if (activeTask.website_filter === 'none' && hasWebsite) {
-        return;
-      }
-      // 'with_active_website' = ONLY leads WITH website
-      if (activeTask.website_filter === 'with_active_website' && !hasWebsite) {
-        return;
-      }
+        // User Filter Enforcement:
+        // 'none' = ONLY leads WITHOUT website
+        if (activeTask.website_filter === 'none' && hasWebsite) {
+          console.log(`[Skipped - Has Website] ${bName}`);
+          return;
+        }
+        // 'with_active_website' = ONLY leads WITH website
+        if (activeTask.website_filter === 'with_active_website' && !hasWebsite) {
+          console.log(`[Skipped - No Website] ${bName}`);
+          return;
+        }
 
       // Extract phone number if present
       let phone = '';
