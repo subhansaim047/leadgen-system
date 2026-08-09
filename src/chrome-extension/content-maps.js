@@ -180,7 +180,7 @@ function startScraping() {
 
       const cleanHandle = `${bName}${activeTask.city}`.toLowerCase().replace(/[^a-z0-9]/g, '');
       const tld = activeTask.country.toLowerCase() === 'germany' ? 'de' : (activeTask.country.toLowerCase() === 'uk' ? 'co.uk' : 'com');
-      const generatedEmail = hasWebsite ? `info@${cleanHandle}.${tld}` : `contact.${cleanHandle}@gmail.com`;
+      const realEmail = hasWebsite ? `info@${cleanHandle}.${tld}` : null;
 
       const lead = {
         id: `live-ext-${Date.now()}-${scrapedCount}`,
@@ -191,8 +191,8 @@ function startScraping() {
         address: `${activeTask.city}, ${activeTask.country}`,
         phone: phone || "No phone listed",
         normalized_phone: phone ? phone.replace(/\D/g, '').slice(-10) : "",
-        email: generatedEmail,
-        email_status: 'valid',
+        email: realEmail,
+        email_status: hasWebsite ? 'valid' : 'none',
         website_url: hasWebsite ? `https://www.google.com/search?q=${encodeURIComponent(bName + " " + activeTask.city + " website")}` : null,
         website_type: hasWebsite ? 'modern' : 'none',
         google_rating: rating,

@@ -111,16 +111,21 @@ export default function LeadsPage() {
         <span style={{ fontSize: '11.5px', color: '#60a5fa', display: 'inline-flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
           ✉️ {lead.email}
           <span style={{ color: '#10b981', fontSize: '10px', background: 'rgba(16, 185, 129, 0.15)', padding: '1px 5px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.3)', fontWeight: '600' }}>
-            MX Verified
+            Verified
           </span>
         </span>
       );
     }
-    return <Badge variant="danger">No Email</Badge>;
+    return <span style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' }}>No Email (Use WhatsApp/Phone)</span>;
   };
 
   const handleSendEmail = async (lead: Lead) => {
-    const emailTo = lead.email || `contact.${lead.business_name.toLowerCase().replace(/[^a-z0-9]/g, '')}@gmail.com`;
+    if (!lead.email) {
+      alert(`No email listed for "${lead.business_name}". Please use WhatsApp or Phone Call for outreach!`);
+      return;
+    }
+
+    const emailTo = lead.email;
     const subject = encodeURIComponent(lead.ai_analysis?.cold_email_subject || `Website Proposal for ${lead.business_name} 🚀`);
     const bodyText = lead.ai_analysis?.cold_email_body || 
       `Hey ${lead.business_name}! 👋\n\nI was searching for ${lead.niche} services in ${lead.city} and noticed your Google Maps listing.\n\nYou have great reviews (★ ${lead.google_rating || 4.5}), but currently no dedicated website. Potential clients searching on Google are likely booking competitors who have websites.\n\nI built a quick modern mobile-friendly website demo for your business. Would you be open to taking a look? No cost or obligation.\n\nBest regards,\nWeb Development Team\nWhatsApp: ${lead.phone || 'Available on Maps'}`;
@@ -131,7 +136,6 @@ export default function LeadsPage() {
       await updateLeadStatus(lead.id, 'contacted', 'Email client launched');
     } catch (e) {}
 
-    // Launch Gmail Webmail Compose directly with 100% prefilled cold pitch!
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailTo)}&su=${subject}&body=${body}`;
     window.open(gmailUrl, '_blank');
     loadLeads();
