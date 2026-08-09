@@ -123,25 +123,24 @@ function startScraping() {
         // Mark as evaluated so we don't re-parse this DOM node every 2s
         processedUrls.add(url);
 
-        // Find the card container surrounding this place link
-        let card = linkEl.parentElement;
-        for (let i = 0; i < 6; i++) {
-          if (card && card.parentElement && card.offsetHeight < 450) {
-            card = card.parentElement;
-          }
-        }
-
+        // Scope strictly to this individual business card (do not climb to parent list container)
+        const card = linkEl.closest('.Nv2PK') || linkEl.closest('div[role="article"]') || linkEl.parentElement.parentElement;
         const cardText = card ? card.innerText.toLowerCase() : linkEl.innerText.toLowerCase();
 
-        // Detect if business has a website button or website link (handles English & German Google Maps)
-        const hasWebsite = card ? (
+        // Find external website links strictly inside this card
+        const externalLinks = Array.from(card ? card.querySelectorAll('a[href^="http"]') : []).filter(a => {
+          const href = a.href.toLowerCase();
+          return !href.includes('google.') && !href.includes('gstatic.com') && !href.includes('ggpht.com');
+        });
+
+        // Detect if THIS specific business has a website
+        const hasWebsite = (
+          externalLinks.length > 0 ||
           Boolean(card.querySelector('a[data-value="Website"]')) ||
           Boolean(card.querySelector('a[data-value="Webseite"]')) ||
           Boolean(card.querySelector('a[aria-label*="website" i]')) ||
-          Boolean(card.querySelector('a[aria-label*="webseite" i]')) ||
-          cardText.includes('website') ||
-          cardText.includes('webseite')
-        ) : (cardText.includes('website') || cardText.includes('webseite'));
+          Boolean(card.querySelector('a[aria-label*="webseite" i]'))
+        );
 
         // User Filter Enforcement:
         // 'none' = ONLY leads WITHOUT website
