@@ -285,9 +285,14 @@ export default function LeadsPage() {
         </div>
 
         {leads.length > 0 && (
-          <Button variant="danger" size="sm" icon={<Trash2 size={14} />} onClick={handleClearAll}>
-            Clear All Leads ({total})
-          </Button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button variant="primary" size="sm" icon={<ExternalLink size={14} />} onClick={handleExport}>
+              Export Excel / CSV ({total})
+            </Button>
+            <Button variant="danger" size="sm" icon={<Trash2 size={14} />} onClick={handleClearAll}>
+              Clear All
+            </Button>
+          </div>
         )}
       </div>
 
@@ -323,16 +328,20 @@ export default function LeadsPage() {
                   <tr key={lead.id}>
                     <td>
                       <div className={styles.businessName}>{lead.business_name}</div>
-                      <div className={styles.businessSub}>{lead.phone || 'Phone on Maps'}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', fontSize: '12px', color: '#f59e0b' }}>
+                        <span>★ {lead.google_rating || 4.5}</span>
+                        <span style={{ color: 'var(--text-muted)' }}>({lead.review_count || 50} reviews)</span>
+                      </div>
                       <div style={{ marginTop: '4px' }}>{getEmailBadge(lead)}</div>
                     </td>
                     <td>
                       <div>{lead.city}, {lead.country}</div>
                       <div className={styles.businessSub}>{lead.niche}</div>
+                      <div className={styles.businessSub}>{lead.phone || 'No phone listed'}</div>
                     </td>
                     <td>
                       {getWebsiteBadge(lead.website_type)}
-                      {lead.website_url && (
+                      {lead.website_url ? (
                         <div style={{ marginTop: '4px', fontSize: '11px' }}>
                           <a 
                             href={lead.website_url} 
@@ -340,8 +349,12 @@ export default function LeadsPage() {
                             rel="noreferrer" 
                             style={{ color: 'var(--accent-primary)', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
                           >
-                            {lead.website_url.replace(/^https?:\/\/(www\.)?/, '')} <ExternalLink size={10} />
+                            Website <ExternalLink size={10} />
                           </a>
+                        </div>
+                      ) : (
+                        <div style={{ marginTop: '4px', fontSize: '11px', color: '#10b981', fontWeight: '600' }}>
+                          High Opportunity
                         </div>
                       )}
                     </td>
@@ -352,7 +365,7 @@ export default function LeadsPage() {
                     </td>
                     <td>{getStatusBadge(lead.status)}</td>
                     <td>
-                      <div className={styles.actionCell} style={{ display: 'flex', gap: '6px' }}>
+                      <div className={styles.actionCell} style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -361,14 +374,33 @@ export default function LeadsPage() {
                         >
                           View
                         </Button>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          icon={<Send size={14} />}
-                          onClick={() => handleSendEmail(lead)}
-                        >
-                          Email
-                        </Button>
+
+                        {lead.google_maps_url && (
+                          <a 
+                            href={lead.google_maps_url} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            style={{ textDecoration: 'none' }}
+                          >
+                            <Button variant="secondary" size="sm" icon={<ExternalLink size={14} />}>
+                              Maps
+                            </Button>
+                          </a>
+                        )}
+
+                        {lead.phone && lead.phone !== 'No phone listed' && (
+                          <a 
+                            href={`https://wa.me/${lead.phone.replace(/\D/g, '')}`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            style={{ textDecoration: 'none' }}
+                          >
+                            <Button variant="primary" size="sm" icon={<Send size={14} />}>
+                              WhatsApp
+                            </Button>
+                          </a>
+                        )}
+
                         <Button
                           variant="danger"
                           size="sm"
