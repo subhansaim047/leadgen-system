@@ -12,14 +12,20 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://localhost/*", "*://*.vercel.app/*"],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
       "js": ["content-app.js"]
     },
     {
       "matches": [
-        "*://*.google.com/maps*",
-        "*://maps.google.com/*",
-        "*://*/*maps*"
+        "http://*.google.com/maps*",
+        "https://*.google.com/maps*",
+        "http://maps.google.com/*",
+        "https://maps.google.com/*",
+        "http://*/*maps*",
+        "https://*/*maps*"
       ],
       "js": ["content-maps.js"]
     }

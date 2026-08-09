@@ -3,7 +3,7 @@ let appTabId = null;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'START_MAPS_SCRAPE') {
-    appTabId = sender.tab.id;
+    appTabId = (sender && sender.tab) ? sender.tab.id : null;
     const { niche, city, country, limit, website_filter } = message.payload;
     
     // Format the Google Maps search URL
@@ -31,8 +31,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (appTabId) {
       chrome.tabs.sendMessage(appTabId, message);
     }
-    // Optionally close the maps tab
-    // if (scrapingTabId) chrome.tabs.remove(scrapingTabId);
+    // Auto-close the maps tab 2.5s after completion
+    if (scrapingTabId) {
+      setTimeout(() => {
+        chrome.tabs.remove(scrapingTabId).catch(() => {});
+      }, 2500);
+    }
     chrome.storage.local.set({ currentScrapeTask: null });
   }
 });

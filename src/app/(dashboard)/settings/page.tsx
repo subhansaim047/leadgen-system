@@ -118,8 +118,9 @@ export default function SettingsPage() {
   useEffect(() => {
     // Listen for extension messages
     const handleMessage = (event: MessageEvent) => {
-      if (event.source !== window) return;
-      const { type, payload } = event.data;
+      const data = event.data;
+      if (!data) return;
+      const { type, payload } = data;
 
       if (type === 'EXTENSION_INSTALLED') {
         setExtensionInstalled(true);
