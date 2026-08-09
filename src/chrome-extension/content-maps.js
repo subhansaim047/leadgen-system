@@ -1,5 +1,9 @@
 // content-maps.js - Injected into Google Maps
-console.log("LeadGen Maps Scraper Injected into Google Maps!");
+if (!window.location.href.includes('/maps')) {
+  console.log("Not a Google Maps URL, skipping execution.");
+} else {
+  console.log("LeadGen Maps Scraper Injected into Google Maps!");
+}
 
 let activeTask = null;
 let scrapedLeads = new Set();

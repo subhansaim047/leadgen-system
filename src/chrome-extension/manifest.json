@@ -19,8 +19,7 @@
       "matches": [
         "*://*.google.com/maps*",
         "*://maps.google.com/*",
-        "*://*.google.*/maps*",
-        "*://www.google.com/maps*"
+        "*://*/*maps*"
       ],
       "js": ["content-maps.js"]
     }
