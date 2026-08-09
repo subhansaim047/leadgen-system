@@ -13,11 +13,19 @@ window.addEventListener("message", (event) => {
   
   if (data.type === 'START_LIVE_SCRAPE') {
     console.log("Dashboard requested live scrape:", data.payload);
-    // Forward to background script to open Google Maps tab
-    chrome.runtime.sendMessage({
-      action: 'START_MAPS_SCRAPE',
-      payload: data.payload
-    });
+    try {
+      if (chrome.runtime && chrome.runtime.id) {
+        chrome.runtime.sendMessage({
+          action: 'START_MAPS_SCRAPE',
+          payload: data.payload
+        });
+      } else {
+        alert("Extension background was updated. Please refresh (F5) this webpage and try again!");
+      }
+    } catch (err) {
+      console.warn("Extension context invalidated:", err);
+      alert("Extension connection was lost due to extension reload. Please refresh (F5) this webpage!");
+    }
   }
 });
 

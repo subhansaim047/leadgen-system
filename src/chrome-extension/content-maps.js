@@ -1,43 +1,82 @@
 // content-maps.js - Injected into Google Maps
-console.log("LeadGen Maps Scraper Injected");
+console.log("LeadGen Maps Scraper Injected into Google Maps!");
 
 let activeTask = null;
 let scrapedLeads = new Set();
 let scrapedCount = 0;
 let scrollInterval = null;
 let isScrapingRunning = false;
+let hudElement = null;
+
+// Create a visual HUD on Google Maps tab so user knows it's working
+function createHUD() {
+  if (hudElement) return;
+  hudElement = document.createElement('div');
+  hudElement.id = 'leadgen-scraper-hud';
+  hudElement.style.cssText = `
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 999999;
+    background: #0f172a;
+    color: #38bdf8;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    border: 2px solid #0284c7;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  `;
+  hudElement.innerHTML = `
+    <span style="display:inline-block; width:10px; height:10px; background:#22c55e; border-radius:50%; animation: pulse 1.5s infinite;"></span>
+    <span>LeadGen Live Scraper: <b id="hud-status" style="color:#fff;">Initializing...</b></span>
+  `;
+  document.body.appendChild(hudElement);
+}
+
+function updateHUD(text) {
+  if (!hudElement) createHUD();
+  const el = document.getElementById('hud-status');
+  if (el) el.innerText = text;
+}
 
 function initScraper() {
   chrome.storage.local.get(['currentScrapeTask'], (result) => {
     if (result.currentScrapeTask && result.currentScrapeTask.active && !isScrapingRunning) {
       activeTask = result.currentScrapeTask;
-      console.log("Starting scrape task from storage:", activeTask);
+      console.log("Found active task in storage:", activeTask);
       isScrapingRunning = true;
-      setTimeout(startScraping, 4000); // 4 sec initial wait for Maps UI to stabilize
+      createHUD();
+      updateHUD(`Starting extraction (${activeTask.website_filter === 'none' ? 'No Website Only' : 'All'})...`);
+      setTimeout(startScraping, 3000);
     }
   });
 }
 
-// Check on load
 initScraper();
 
-// Listen for storage changes in case task was set after page started loading
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.currentScrapeTask && changes.currentScrapeTask.newValue?.active) {
     if (!isScrapingRunning) {
       activeTask = changes.currentScrapeTask.newValue;
-      console.log("Starting scrape task from storage change:", activeTask);
+      console.log("Task received via storage event:", activeTask);
       isScrapingRunning = true;
-      setTimeout(startScraping, 4000);
+      createHUD();
+      updateHUD(`Task Received! Starting...`);
+      setTimeout(startScraping, 3000);
     }
   }
 });
 
-function scrollFeedContainer() {
-  // 1. Try finding role="feed"
+function multiScrollFeed() {
+  // Strategy 1: Find role="feed"
   let feed = document.querySelector('[role="feed"]');
   
-  // 2. Try finding scrollable div in left pane
+  // Strategy 2: Find left pane scrollable container
   if (!feed) {
     const divs = document.querySelectorAll('div');
     for (let d of divs) {
@@ -49,10 +88,22 @@ function scrollFeedContainer() {
   }
 
   if (feed) {
+    // A. Direct scroll
     feed.scrollTop = feed.scrollHeight;
+    
+    // B. Dispatch scroll event
+    feed.dispatchEvent(new Event('scroll', { bubbles: true }));
+
+    // C. Dispatch synthetic Mouse Wheel event (forces Google Maps lazy loader)
+    const wheelEvt = new WheelEvent('wheel', {
+      deltaY: 1200,
+      bubbles: true,
+      cancelable: true
+    });
+    feed.dispatchEvent(wheelEvt);
   }
 
-  // Fallback: bring the last place link into view
+  // Strategy 3: Scroll last place item into view
   const links = document.querySelectorAll('a[href*="/maps/place/"]');
   if (links.length > 0) {
     links[links.length - 1].scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -60,16 +111,18 @@ function scrollFeedContainer() {
 }
 
 function startScraping() {
-  console.log("Live Maps Scraping Loop Started! Task:", activeTask);
+  console.log("Scraping loop running every 2s...");
   
   scrollInterval = setInterval(() => {
     if (!activeTask) return;
 
-    // Scroll down to load more results
-    scrollFeedContainer();
+    // Perform multi-layered scroll
+    multiScrollFeed();
 
-    // Get all listing containers or place links
+    // Find all place links in Google Maps sidebar
     const placeLinks = Array.from(document.querySelectorAll('a[href*="/maps/place/"]'));
+
+    updateHUD(`Scraped ${scrapedCount} / ${activeTask.limit} leads (Scanning ${placeLinks.length} items)...`);
 
     placeLinks.forEach(linkEl => {
       const url = linkEl.href;
@@ -82,38 +135,43 @@ function startScraping() {
       // Find the card container surrounding this place link
       let card = linkEl.parentElement;
       for (let i = 0; i < 6; i++) {
-        if (card && card.parentElement && card.offsetHeight < 400) {
+        if (card && card.parentElement && card.offsetHeight < 450) {
           card = card.parentElement;
         }
       }
 
       const cardText = card ? card.innerText : linkEl.innerText;
 
-      // Check if this business has a website button or website link
-      // Google Maps listing cards show a "Website" button/link if they have one
+      // Detect if business has a website button or website link
       const hasWebsite = card ? (
         Boolean(card.querySelector('a[data-value="Website"]')) ||
         Boolean(card.querySelector('a[aria-label*="website" i]')) ||
         cardText.toLowerCase().includes('website')
       ) : cardText.toLowerCase().includes('website');
 
-      // Apply User Filters
-      // If user selected 'none' (only leads WITHOUT website), skip if it has website
+      // User Filter Enforcement:
+      // 'none' = ONLY leads WITHOUT website
       if (activeTask.website_filter === 'none' && hasWebsite) {
         return;
       }
-      // If user selected 'with_active_website' (only leads WITH website), skip if no website
+      // 'with_active_website' = ONLY leads WITH website
       if (activeTask.website_filter === 'with_active_website' && !hasWebsite) {
         return;
       }
 
-      // Extract phone number from text
+      // Extract phone number if present
       let phone = '';
       const phoneMatch = cardText.match(/\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/);
       if (phoneMatch) phone = phoneMatch[0];
 
       scrapedLeads.add(url);
       scrapedCount++;
+
+      // Highlight card visually on Google Maps so user can see it!
+      if (card) {
+        card.style.border = '2px solid #22c55e';
+        card.style.backgroundColor = '#f0fdf4';
+      }
 
       const cleanHandle = `${bName}${activeTask.city}`.toLowerCase().replace(/[^a-z0-9]/g, '');
       const lead = {
@@ -151,14 +209,17 @@ function startScraping() {
 
       console.log(`[Lead ${scrapedCount}/${activeTask.limit}] Scraped:`, lead.business_name);
       chrome.runtime.sendMessage({ action: 'LEAD_SCRAPED', payload: lead });
+      updateHUD(`Scraped ${scrapedCount} / ${activeTask.limit} leads (${bName})`);
     });
 
-    // Check if target limit is reached
     if (scrapedCount >= activeTask.limit) {
       clearInterval(scrollInterval);
+      updateHUD(`✅ Scraping Completed! (${scrapedCount} leads)`);
       chrome.runtime.sendMessage({ action: 'SCRAPE_FINISHED' });
-      alert(`Scraping Completed!\nSuccessfully extracted ${scrapedCount} leads matching your criteria.`);
+      setTimeout(() => {
+        alert(`Scraping Completed!\nSuccessfully extracted ${scrapedCount} leads matching your criteria.`);
+      }, 500);
     }
 
-  }, 2500); // Repeat every 2.5 seconds
+  }, 2000); // 2 sec interval
 }
