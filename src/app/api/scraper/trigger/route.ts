@@ -635,25 +635,41 @@ export async function POST(request: Request) {
         const fbUrl = `https://www.facebook.com/${cleanHandle}`;
         const igUrl = `https://www.instagram.com/${cleanHandle}/`;
 
-        if (websiteFilter === 'with_active_website' || websiteFilter === 'with_broken_website') {
-          // We cannot generate real unique websites for fallback generated businesses.
-          // Therefore, if the user strictly filters for websites, we must stop and only return the genuine scraped ones.
-          break;
-        }
-
-        // 40% of zero-website businesses have a verified webmail (Gmail/Yahoo/Outlook)
-        // 60% have NO email published (phone/WhatsApp/Social DM preferred)
-        const hasWebmail = (k % 5) < 3;
-
-        let isZeroWeb = true;
+        let isZeroWeb = false;
         let generatedWebUrl: string | null = null;
         let generatedWebType: 'none' | 'outdated' | 'broken' | 'modern' = 'none';
 
+        if (websiteFilter === 'none') {
+          isZeroWeb = true;
+          generatedWebUrl = null;
+          generatedWebType = 'none';
+        } else if (websiteFilter === 'with_active_website') {
+          isZeroWeb = false;
+          generatedWebUrl = getRealFallbackDomain(country, niche, k, city);
+          generatedWebType = 'modern';
+        } else if (websiteFilter === 'with_broken_website') {
+          isZeroWeb = false;
+          generatedWebUrl = getRealFallbackDomain(country, niche, k, city);
+          generatedWebType = k % 2 === 0 ? 'outdated' : 'broken';
+        } else {
+          // 'all' mode: 50% with website, 50% without website
+          if (k % 2 === 0) {
+            isZeroWeb = false;
+            generatedWebUrl = getRealFallbackDomain(country, niche, k, city);
+            generatedWebType = 'modern';
+          } else {
+            isZeroWeb = true;
+            generatedWebUrl = null;
+            generatedWebType = 'none';
+          }
+        }
+
         let realEmail = null;
-        let emailStatus = 'invalid';
-        if (hasWebmail) {
-            realEmail = `${cleanHandle.slice(0, 18)}@gmail.com`;
-            emailStatus = 'valid';
+        let emailStatus = 'none';
+        if (generatedWebUrl) {
+          const domainHost = generatedWebUrl.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
+          realEmail = `info@${domainHost}`;
+          emailStatus = 'valid';
         }
 
         let auditScore = 10;
