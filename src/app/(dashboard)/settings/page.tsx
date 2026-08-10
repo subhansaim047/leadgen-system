@@ -206,7 +206,7 @@ export default function SettingsPage() {
       
       window.postMessage({
         type: 'START_LIVE_SCRAPE',
-        payload: { niche, city, country, limit, website_filter: websiteFilter }
+        payload: { niche, city, country, limit, source, website_filter: websiteFilter }
       }, '*');
       // The rest is handled by the event listener (LEAD_SCRAPED, SCRAPE_FINISHED)
       return;
