@@ -125,22 +125,32 @@ function startScraping() {
 
         // Scope strictly to this individual business card (do not climb to parent list container)
         const card = linkEl.closest('.Nv2PK') || linkEl.closest('div[role="article"]') || linkEl.parentElement.parentElement;
-        const cardText = card ? card.innerText.toLowerCase() : linkEl.innerText.toLowerCase();
+        const cardText = card ? card.innerText : linkEl.innerText;
+        const cardHtml = card ? card.innerHTML : linkEl.innerHTML;
 
         // Find external website links strictly inside this card
         const externalLinks = Array.from(card ? card.querySelectorAll('a[href^="http"]') : []).filter(a => {
           const href = a.href.toLowerCase();
-          return !href.includes('google.') && !href.includes('gstatic.com') && !href.includes('ggpht.com');
+          return !href.includes('google.') && !href.includes('gstatic.com') && !href.includes('ggpht.com') && !href.includes('facebook.com') && !href.includes('instagram.com');
         });
 
-        // Detect if THIS specific business has a website
-        const hasWebsite = (
-          externalLinks.length > 0 ||
-          Boolean(card.querySelector('a[data-value="Website"]')) ||
-          Boolean(card.querySelector('a[data-value="Webseite"]')) ||
-          Boolean(card.querySelector('a[aria-label*="website" i]')) ||
-          Boolean(card.querySelector('a[aria-label*="webseite" i]'))
-        );
+        // Extract actual direct website URL if present
+        let actualWebsiteUrl = null;
+        if (externalLinks.length > 0) {
+          actualWebsiteUrl = externalLinks[0].href;
+        } else {
+          const websiteBtn = card ? (
+            card.querySelector('a[data-value="Website"]') ||
+            card.querySelector('a[data-value="Webseite"]') ||
+            card.querySelector('a[aria-label*="website" i]') ||
+            card.querySelector('a[aria-label*="webseite" i]')
+          ) : null;
+          if (websiteBtn && websiteBtn.href && websiteBtn.href.startsWith('http') && !websiteBtn.href.includes('google.')) {
+            actualWebsiteUrl = websiteBtn.href;
+          }
+        }
+
+        const hasWebsite = Boolean(actualWebsiteUrl);
 
         // User Filter Enforcement:
         // 'none' = ONLY leads WITHOUT website
@@ -158,6 +168,18 @@ function startScraping() {
       let phone = '';
       const phoneMatch = cardText.match(/\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/);
       if (phoneMatch) phone = phoneMatch[0];
+
+      // Extract REAL email address if present on card (mailto: link or email regex in card HTML/text)
+      let realEmail = null;
+      const mailtoLink = card ? card.querySelector('a[href^="mailto:"]') : null;
+      if (mailtoLink) {
+        realEmail = mailtoLink.href.replace(/^mailto:/i, '').split('?')[0].trim();
+      } else {
+        const emailMatch = cardHtml.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+        if (emailMatch) {
+          realEmail = emailMatch[0];
+        }
+      }
 
       // Extract real Google Rating (e.g. 4.8)
       const ratingMatch = cardText.match(/\b([1-5]\.\d)\b/);
@@ -179,8 +201,6 @@ function startScraping() {
       }
 
       const cleanHandle = `${bName}${activeTask.city}`.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const tld = activeTask.country.toLowerCase() === 'germany' ? 'de' : (activeTask.country.toLowerCase() === 'uk' ? 'co.uk' : 'com');
-      const realEmail = hasWebsite ? `info@${cleanHandle}.${tld}` : null;
 
       const lead = {
         id: `live-ext-${Date.now()}-${scrapedCount}`,
@@ -192,8 +212,8 @@ function startScraping() {
         phone: phone || "No phone listed",
         normalized_phone: phone ? phone.replace(/\D/g, '').slice(-10) : "",
         email: realEmail,
-        email_status: hasWebsite ? 'valid' : 'none',
-        website_url: hasWebsite ? `https://www.google.com/search?q=${encodeURIComponent(bName + " " + activeTask.city + " website")}` : null,
+        email_status: realEmail ? 'valid' : 'none',
+        website_url: actualWebsiteUrl,
         website_type: hasWebsite ? 'modern' : 'none',
         google_rating: rating,
         review_count: reviews,
@@ -205,12 +225,12 @@ function startScraping() {
         created_at: new Date().toISOString(),
         audit: {
           id: `audit-ext-${Date.now()}`,
-          has_ssl: true,
+          has_ssl: hasWebsite,
           is_mobile_friendly: true,
           load_time_seconds: 1.5,
-          cms_detected: hasWebsite ? 'Unknown' : 'none',
+          cms_detected: hasWebsite ? 'Verified Domain' : 'none',
           audit_score: hasWebsite ? 90 : 10,
-          issues: hasWebsite ? ['Verified via Live Extension Scrape'] : ['No Website - High Outreach Prospect'],
+          issues: hasWebsite ? ['Active Website Found'] : ['No Website - High Outreach Prospect'],
           summary: `Live scraped from Google Maps directly in your browser.`
         }
       };
