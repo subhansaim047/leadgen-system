@@ -58,23 +58,11 @@ function extractCleanLiveUrl(rawUrl: string): string | null {
   return target;
 }
 
-function getRealFallbackDomain(c: string, n: string, index: number, city: string, liveScrapedUrls: string[] = []): string {
+function getRealFallbackDomain(c: string, n: string, index: number, city: string, liveScrapedUrls: string[] = []): string | null {
   if (liveScrapedUrls && liveScrapedUrls.length > 0) {
      return liveScrapedUrls[index % liveScrapedUrls.length];
   }
-
-  // Fallbacks if absolutely 0 real websites were found during the DDG live search
-  const genericFallbacks = [
-     'https://vubu-medical.de/en/surgical-instruments',
-     'https://beauty-teck.de/',
-     'https://www.sossurgical.de/',
-     'https://www.pureskin-berlin.de',
-     'https://sanft-schoen.de',
-     'https://www.elektriker-berlin.de',
-     'https://www.autodetailing-berlin.de',
-     'https://www.klimatechnik-berlin.de'
-  ];
-  return genericFallbacks[index % genericFallbacks.length];
+  return null;
 }
 
 // 100% Verified City-Specific Registries
@@ -666,11 +654,6 @@ export async function POST(request: Request) {
 
         let realEmail = null;
         let emailStatus = 'none';
-        if (generatedWebUrl) {
-          const domainHost = generatedWebUrl.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
-          realEmail = `info@${domainHost}`;
-          emailStatus = 'valid';
-        }
 
         let auditScore = 10;
         let auditSummary = '';
