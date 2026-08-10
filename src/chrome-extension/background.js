@@ -21,8 +21,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else if (source === 'apple_maps_live') {
       targetUrl = `https://www.google.com/maps/search/${encodeURIComponent(niche + " in " + city + " " + country)}`;
     } else if (source === 'chamber_commerce') {
-      // Chamber uses Google Maps engine - IHK/Chamber businesses are registered there
-      targetUrl = `https://www.google.com/maps/search/${encodeURIComponent(niche + " registered business " + city + " " + country)}`;
+      // Real Chamber of Commerce directory - simple DDG query, no CAPTCHA
+      targetUrl = `https://html.duckduckgo.com/html/?q=site:chamberofcommerce.com+${encodeURIComponent(niche + ' ' + city)}`;
     }
     
     // Set storage FIRST so content script finds it immediately

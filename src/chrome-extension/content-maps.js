@@ -632,14 +632,11 @@ function scrapeBingMaps() {
 
 // -------------------------------------------------------------
 // MODULE 5: CHAMBER OF COMMERCE / B2B REGISTRY SCRAPER
-// Routes to Google Maps for verified registered businesses
-// (using Google Maps as scraping engine with chamber filter)
+// Uses DuckDuckGo X-Ray: site:chamberofcommerce.com query
+// No CAPTCHA, real registered business data with phone + address
 // -------------------------------------------------------------
 function scrapeChamberDirectory() {
-  console.log("Scraping Chamber/B2B Registry via Google Maps engine...");
-  // Chamber of Commerce scraping reuses the Google Maps engine
-  // because Google Maps business listings are cross-referenced with
-  // official IHK/Chamber registries. The difference is we scrape ALL
-  // listings (no website filter) and mark source as 'chamber_commerce'.
-  scrapeGoogleMaps();
+  console.log("Scraping Chamber of Commerce Registry via DDG X-Ray...");
+  // Reuse the full DDG X-Ray engine — same HTML structure, same parsing
+  scrapeDuckDuckGoXRay();
 }
