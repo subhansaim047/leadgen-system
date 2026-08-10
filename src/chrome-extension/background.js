@@ -21,7 +21,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else if (source === 'apple_maps_live') {
       targetUrl = `https://www.google.com/maps/search/${encodeURIComponent(niche + " in " + city + " " + country)}`;
     } else if (source === 'chamber_commerce') {
-      targetUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent('chamber of commerce directory ' + niche + ' ' + city + ' ' + country)}`;
+      // Target IHK/Chamber registered business member directories directly
+      targetUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(niche + ' ' + city + ' ' + country + ' site:ihk.de OR site:berlinchamber.org OR site:uschamber.com OR site:chamberofcommerce.com email contact')}`;
     }
     
     // Set storage FIRST so content script finds it immediately

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "LeadGen System Real Scraper",
-  "version": "1.0",
-  "description": "Visual auto-scrolling scraper for Google Maps connected to LeadGen Dashboard.",
+  "version": "2.0",
+  "description": "Multi-platform live lead scraper for Google Maps, LinkedIn, Facebook, Instagram, Yelp, Bing, Chamber of Commerce.",
   "permissions": ["tabs", "scripting", "storage"],
   "host_permissions": [
     "<all_urls>"
@@ -20,16 +20,20 @@
     },
     {
       "matches": [
-        "http://*.google.com/maps*",
         "https://*.google.com/maps*",
-        "http://maps.google.com/*",
+        "http://*.google.com/maps*",
         "https://maps.google.com/*",
-        "http://*/*maps*",
-        "https://*/*maps*",
-        "http://*.google.com/search*",
-        "https://*.google.com/search*",
+        "http://maps.google.com/*",
+        "https://*.duckduckgo.com/*",
+        "http://*.duckduckgo.com/*",
+        "https://html.duckduckgo.com/*",
+        "http://html.duckduckgo.com/*",
+        "https://*.yelp.com/*",
         "http://*.yelp.com/*",
-        "https://*.yelp.com/*"
+        "https://*.bing.com/maps*",
+        "http://*.bing.com/maps*",
+        "https://*.bing.com/search*",
+        "http://*.bing.com/search*"
       ],
       "js": ["content-maps.js"]
     }
