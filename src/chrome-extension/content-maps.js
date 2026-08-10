@@ -323,20 +323,6 @@ function scrapeDuckDuckGoXRay() {
         }
       }
 
-      if (activeTask.website_filter === 'with_active_website' && !actualWebsiteUrl) {
-        // Use LinkedIn/Facebook/Instagram URL slug as clean domain
-        const tld = activeTask.country.toLowerCase() === 'germany' ? 'de' : (activeTask.country.toLowerCase() === 'uk' ? 'co.uk' : 'com');
-        const slugMatch = itemUrl.match(/\/company\/([^\/\?&]+)/) ||
-                          itemUrl.match(/facebook\.com\/([^\/\?&]+)/) ||
-                          itemUrl.match(/instagram\.com\/([^\/\?&]+)/) ||
-                          itemUrl.match(/chamberofcommerce\.com\/[^/]+\/[^/]+\/[^/]+\/[^/]+\/[\d]+-(.+)$/);
-        const slug = slugMatch ? slugMatch[1].replace(/[^a-z0-9-]/gi, '-').toLowerCase().slice(0, 25) : bName.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 20);
-        // Validate slug is not a generic path segment
-        if (!['groups','pages','events','explore','popular','marketplace','stories','reels','p','r'].includes(slug)) {
-          actualWebsiteUrl = `https://www.${slug}.${tld}`;
-        }
-      }
-
       const hasWebsite = Boolean(actualWebsiteUrl);
 
       if (activeTask.website_filter === 'none' && hasWebsite) return;
@@ -441,12 +427,6 @@ function scrapeYelpDirectory() {
         } catch(e) {
           actualWebsiteUrl = websiteBtn.href;
         }
-      }
-
-      if (activeTask.website_filter === 'with_active_website' && !actualWebsiteUrl) {
-        const cleanBiz = bName.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const tld = activeTask.country.toLowerCase() === 'germany' ? 'de' : (activeTask.country.toLowerCase() === 'uk' ? 'co.uk' : 'com');
-        actualWebsiteUrl = `https://www.${cleanBiz}.${tld}`;
       }
 
       const hasWebsite = Boolean(actualWebsiteUrl);
@@ -576,12 +556,6 @@ function scrapeBingMaps() {
           actualWebsiteUrl = href;
           break;
         }
-      }
-
-      if (activeTask.website_filter === 'with_active_website' && !actualWebsiteUrl) {
-        const cleanBiz = bName.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const tld = activeTask.country.toLowerCase() === 'germany' ? 'de' : (activeTask.country.toLowerCase() === 'uk' ? 'co.uk' : 'com');
-        actualWebsiteUrl = `https://www.${cleanBiz}.${tld}`;
       }
 
       const hasWebsite = Boolean(actualWebsiteUrl);
