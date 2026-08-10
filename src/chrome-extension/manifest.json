@@ -25,7 +25,11 @@
         "http://maps.google.com/*",
         "https://maps.google.com/*",
         "http://*/*maps*",
-        "https://*/*maps*"
+        "https://*/*maps*",
+        "http://*.google.com/search*",
+        "https://*.google.com/search*",
+        "http://*.yelp.com/*",
+        "https://*.yelp.com/*"
       ],
       "js": ["content-maps.js"]
     }
