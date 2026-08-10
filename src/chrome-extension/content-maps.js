@@ -128,29 +128,46 @@ function startScraping() {
         const cardText = card ? card.innerText : linkEl.innerText;
         const cardHtml = card ? card.innerHTML : linkEl.innerHTML;
 
-        // Find external website links strictly inside this card
-        const externalLinks = Array.from(card ? card.querySelectorAll('a[href^="http"]') : []).filter(a => {
-          const href = a.href.toLowerCase();
-          return !href.includes('google.') && !href.includes('gstatic.com') && !href.includes('ggpht.com') && !href.includes('facebook.com') && !href.includes('instagram.com');
-        });
+        const cardTextLower = (card ? card.innerText : linkEl.innerText).toLowerCase();
 
-        // Extract actual direct website URL if present
+        // Comprehensive multi-indicator website check
         let actualWebsiteUrl = null;
-        if (externalLinks.length > 0) {
-          actualWebsiteUrl = externalLinks[0].href;
-        } else {
-          const websiteBtn = card ? (
-            card.querySelector('a[data-value="Website"]') ||
-            card.querySelector('a[data-value="Webseite"]') ||
-            card.querySelector('a[aria-label*="website" i]') ||
-            card.querySelector('a[aria-label*="webseite" i]')
-          ) : null;
-          if (websiteBtn && websiteBtn.href && websiteBtn.href.startsWith('http') && !websiteBtn.href.includes('google.')) {
-            actualWebsiteUrl = websiteBtn.href;
+        let hasWebsiteIndicator = false;
+
+        if (card) {
+          // Check all anchors inside the card
+          const anchors = Array.from(card.querySelectorAll('a'));
+          for (let a of anchors) {
+            const href = a.href || '';
+            const aria = (a.getAttribute('aria-label') || '').toLowerCase();
+            const dataVal = (a.getAttribute('data-value') || '').toLowerCase();
+            const aText = (a.innerText || '').toLowerCase();
+
+            if (dataVal === 'website' || dataVal === 'webseite' || aria.includes('website') || aria.includes('webseite') || aText.includes('website') || aText.includes('webseite')) {
+              hasWebsiteIndicator = true;
+            }
+
+            if (href.includes('/url?q=')) {
+              hasWebsiteIndicator = true;
+              try {
+                const u = new URL(href);
+                const q = u.searchParams.get('q');
+                if (q && q.startsWith('http') && !q.includes('google.')) {
+                  actualWebsiteUrl = q.split('&')[0];
+                }
+              } catch(e) {}
+            } else if (href.startsWith('http') && !href.includes('google.') && !href.includes('gstatic.') && !href.includes('ggpht.') && !href.includes('facebook.com') && !href.includes('instagram.com')) {
+              hasWebsiteIndicator = true;
+              if (!actualWebsiteUrl) actualWebsiteUrl = href;
+            }
+          }
+
+          if (cardTextLower.includes('website') || cardTextLower.includes('webseite') || cardTextLower.includes('site web') || cardTextLower.includes('siteweb')) {
+            hasWebsiteIndicator = true;
           }
         }
 
-        const hasWebsite = Boolean(actualWebsiteUrl);
+        const hasWebsite = hasWebsiteIndicator || Boolean(actualWebsiteUrl);
 
         // User Filter Enforcement:
         // 'none' = ONLY leads WITHOUT website
