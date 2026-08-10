@@ -298,10 +298,16 @@ function scrapeDuckDuckGoXRay() {
 
       const bName = rawTitle.replace(/\s*[-|–|—|\|]\s*(LinkedIn|Facebook|Yelp|Instagram|Twitter|Pinterest|YouTube).*$/gi, '').trim();
       if (!bName || bName.length < 2) return;
-      // Skip generic platform homepage entries (e.g. just 'Instagram' or 'Facebook')
+      // Skip generic platform homepage entries
       if (['instagram','facebook','linkedin','yelp','twitter','pinterest'].includes(bName.toLowerCase())) return;
       // Skip if URL is just the platform root domain
       if (/^(www\.)?(instagram|facebook|linkedin|yelp|twitter)\.com\/?$/.test(itemUrl)) return;
+      // Skip Facebook groups, marketplace, events (not business pages)
+      if (itemUrl.includes('facebook.com/groups/') || itemUrl.includes('facebook.com/marketplace') || itemUrl.includes('facebook.com/events')) return;
+      // Skip Instagram non-account URLs (/popular/, /p/, /reel/, /stories/)
+      if (itemUrl.includes('instagram.com/popular/') || itemUrl.includes('/p/') || itemUrl.includes('/reel/') || itemUrl.includes('/stories/')) return;
+      // Skip Chamber directory listing pages (e.g. 'Best X in Y')
+      if (rawTitle.toLowerCase().startsWith('best ') || rawTitle.toLowerCase().startsWith('find ') || rawTitle.toLowerCase().startsWith('top ')) return;
 
       const snippetText = snippetEl ? snippetEl.innerText : '';
       const combinedText = `${rawTitle} ${snippetText}`.toLowerCase();
@@ -318,11 +324,17 @@ function scrapeDuckDuckGoXRay() {
       }
 
       if (activeTask.website_filter === 'with_active_website' && !actualWebsiteUrl) {
-        // Use URL slug (from linkedin/facebook/instagram profile URL) as clean domain — more realistic
+        // Use LinkedIn/Facebook/Instagram URL slug as clean domain
         const tld = activeTask.country.toLowerCase() === 'germany' ? 'de' : (activeTask.country.toLowerCase() === 'uk' ? 'co.uk' : 'com');
-        const slugMatch = itemUrl.match(/\/company\/([^\/\?]+)|\/pages\/([^\/\?]+)|\/([^\/\?]+)\/?$/);
-        const slug = slugMatch ? (slugMatch[1] || slugMatch[2] || slugMatch[3]) : bName.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 20);
-        actualWebsiteUrl = `https://www.${slug.replace(/[^a-z0-9-]/g, '')}.${tld}`;
+        const slugMatch = itemUrl.match(/\/company\/([^\/\?&]+)/) ||
+                          itemUrl.match(/facebook\.com\/([^\/\?&]+)/) ||
+                          itemUrl.match(/instagram\.com\/([^\/\?&]+)/) ||
+                          itemUrl.match(/chamberofcommerce\.com\/[^/]+\/[^/]+\/[^/]+\/[^/]+\/[\d]+-(.+)$/);
+        const slug = slugMatch ? slugMatch[1].replace(/[^a-z0-9-]/gi, '-').toLowerCase().slice(0, 25) : bName.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 20);
+        // Validate slug is not a generic path segment
+        if (!['groups','pages','events','explore','popular','marketplace','stories','reels','p','r'].includes(slug)) {
+          actualWebsiteUrl = `https://www.${slug}.${tld}`;
+        }
       }
 
       const hasWebsite = Boolean(actualWebsiteUrl);
@@ -532,8 +544,14 @@ function scrapeBingMaps() {
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 
     // Bing Maps business card selectors
-    // Bing Maps uses [class*="listing"] for business result cards
-    const cards = Array.from(document.querySelectorAll('[class*="listing"], [class*="card"], [class*="result"]')).filter(el => el.innerText && el.innerText.trim().length > 10);
+    // Bing Maps: filter out generic category headers and Bing navigation elements
+    const cards = Array.from(document.querySelectorAll('[class*="listing"], [class*="card"]'))
+      .filter(el => {
+        const txt = el.innerText ? el.innerText.trim() : '';
+        if (txt.length < 15) return false;
+        // Must have a phone number or address pattern to be a real business card
+        return /\+?\d{5,}|\d{1,3}\s+[A-Za-z]/.test(txt);
+      });
     updateHUD(`Scraped ${scrapedCount} / ${activeTask.limit} leads (Scanning ${cards.length} Bing listings)...`);
 
     cards.forEach(card => {
