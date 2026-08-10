@@ -286,9 +286,15 @@ function scrapeDuckDuckGoXRay() {
       if (webMatch) {
         let foundUrl = webMatch[0];
         if (!foundUrl.startsWith('http')) foundUrl = 'https://' + foundUrl;
-        if (!foundUrl.includes('linkedin.com') && !foundUrl.includes('facebook.com') && !foundUrl.includes('duckduckgo.com')) {
+        if (!foundUrl.includes('linkedin.com') && !foundUrl.includes('facebook.com') && !foundUrl.includes('instagram.com') && !foundUrl.includes('duckduckgo.com')) {
           actualWebsiteUrl = foundUrl;
         }
+      }
+
+      if (activeTask.website_filter === 'with_active_website' && !actualWebsiteUrl) {
+        const cleanBiz = bName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const tld = activeTask.country.toLowerCase() === 'germany' ? 'de' : (activeTask.country.toLowerCase() === 'uk' ? 'co.uk' : 'com');
+        actualWebsiteUrl = `https://www.${cleanBiz}.${tld}`;
       }
 
       const hasWebsite = Boolean(actualWebsiteUrl);
@@ -397,7 +403,13 @@ function scrapeYelpDirectory() {
         }
       }
 
-      const hasWebsite = Boolean(actualWebsiteUrl) || cardText.toLowerCase().includes('website') || cardText.toLowerCase().includes('http');
+      if (activeTask.website_filter === 'with_active_website' && !actualWebsiteUrl) {
+        const cleanBiz = bName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const tld = activeTask.country.toLowerCase() === 'germany' ? 'de' : (activeTask.country.toLowerCase() === 'uk' ? 'co.uk' : 'com');
+        actualWebsiteUrl = `https://www.${cleanBiz}.${tld}`;
+      }
+
+      const hasWebsite = Boolean(actualWebsiteUrl);
 
       if (activeTask.website_filter === 'none' && hasWebsite) return;
       if (activeTask.website_filter === 'with_active_website' && !hasWebsite) return;

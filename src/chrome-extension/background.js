@@ -9,11 +9,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     let targetUrl = `https://www.google.com/maps/search/${encodeURIComponent(niche + " in " + city + " " + country)}`;
     
     if (source === 'linkedin_live') {
-      targetUrl = `https://www.google.com/search?q=${encodeURIComponent('site:linkedin.com/company "' + niche + '" "' + city + '" ' + country)}`;
+      targetUrl = `https://html.duckduckgo.com/html/?q=site:linkedin.com/company+${encodeURIComponent(niche + " " + city + " " + country)}`;
     } else if (source === 'facebook_live') {
-      targetUrl = `https://www.google.com/search?q=${encodeURIComponent('site:facebook.com "' + niche + '" "' + city + '" ' + country)}`;
+      targetUrl = `https://html.duckduckgo.com/html/?q=site:facebook.com+${encodeURIComponent(niche + " " + city + " " + country)}`;
+    } else if (source === 'instagram_live') {
+      targetUrl = `https://html.duckduckgo.com/html/?q=site:instagram.com+${encodeURIComponent(niche + " " + city + " " + country)}`;
     } else if (source === 'yelp_live') {
       targetUrl = `https://www.yelp.com/search?find_desc=${encodeURIComponent(niche)}&find_loc=${encodeURIComponent(city + ', ' + country)}`;
+    } else if (source === 'bing_places_live') {
+      targetUrl = `https://www.bing.com/maps?q=${encodeURIComponent(niche + " in " + city + " " + country)}`;
+    } else if (source === 'apple_maps_live') {
+      targetUrl = `https://www.google.com/maps/search/${encodeURIComponent(niche + " in " + city + " " + country)}`;
+    } else if (source === 'chamber_commerce') {
+      targetUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent('chamber of commerce directory ' + niche + ' ' + city + ' ' + country)}`;
     }
     
     // Set storage FIRST so content script finds it immediately
